@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "hll-seed-vip"
+version = "0.1.0"
+description = ""
+authors = ["C. Eric Mathey <emathey@protonmail.com>"]
+readme = "README.md"
+packages = [{include = "hll_seed_vip"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.3.3"
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+target-version = ['py311']
+include = '\.pyi?$'
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
