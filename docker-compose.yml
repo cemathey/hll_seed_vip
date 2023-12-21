@@ -1,0 +1,17 @@
+version: "3.8"
+
+name: hll_seed_vip
+services:
+    hll_seed_vip:
+        environment:
+            - LOGURU_LEVEL=DEBUG
+            - API_KEY=${API_KEY}
+        init: true
+        container_name: hll_server_status
+        volumes:
+            - ./logs:/code/logs
+            - ./config:/code/config
+        restart: unless-stopped
+        image: hll_server_status
+        build:
+          dockerfile: ./Dockerfile

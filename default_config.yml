@@ -1,0 +1,24 @@
+# API key is set as a env var
+# TODO: seed message
+# TODO: logging webhooks
+base_url: ""
+dry_run: true
+poll_time_seeding: 60
+poll_time_seeded: 300
+requirements:
+  min_allies: 0
+  min_axis: 0
+  max_allies: 20
+  max_axis: 20
+  online_when_seeded: true
+  minimum_play_time:
+    seconds: 0
+    minutes: 5
+    hours: 0
+vip_reward:
+  cumulative: true
+  timeframe:
+    minutes: 0
+    hours: 24
+    days: 0
+    weeks: 0
