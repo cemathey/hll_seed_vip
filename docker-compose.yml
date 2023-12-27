@@ -7,11 +7,11 @@ services:
             - LOGURU_LEVEL=DEBUG
             - API_KEY=${API_KEY}
         init: true
-        container_name: hll_server_status
+        container_name: hll_seed_vip
         volumes:
             - ./logs:/code/logs
             - ./config:/code/config
         restart: unless-stopped
-        image: hll_server_status
+        image: hll_seed_vip
         build:
           dockerfile: ./Dockerfile
