@@ -115,12 +115,15 @@ async def reward_players(
     # TODO: make concurrent
     for steam_id_64 in to_add_vip_steam_ids:
         player = current_vips[steam_id_64]
+        expiration_date = calc_vip_expiration_timestamp(
+            config=config,
+            expiration=player.expiration_date,
+            from_time=seeded_timestamp,
+        )
+        logger.info(
+            f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {expiration_date=}"
+        )
         if not config.dry_run:
-            expiration_date = calc_vip_expiration_timestamp(
-                config=config,
-                expiration=player.expiration_date,
-                from_time=seeded_timestamp,
-            )
             await add_vip(
                 client=client,
                 server_url=config.base_url,
