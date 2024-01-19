@@ -89,11 +89,7 @@ async def add_vip(
     response = await client.post(url=url, data=body)
     result = response.json()["result"]
     logger.info(
-        "added VIP for steam_id_64=%s expiration_timestamp=%s player_name=%s result=%s",
-        steam_id_64,
-        expiration_timestamp,
-        player_name,
-        result,
+        f"added VIP for {steam_id_64=} {expiration_timestamp=} {player_name=} {result=}",
     )
 
 
@@ -105,9 +101,9 @@ async def reward_players(
     seeded_timestamp: datetime,
 ):
     # TODO: make concurrent
-    logger.debug("Rewarding players with VIP dry_run=%s", config.dry_run)
-    logger.debug("to_add_vip_steam_ids=%s", to_add_vip_steam_ids)
-    logger.debug("current_vips=%s", current_vips)
+    logger.debug(f"Rewarding players with VIP {config.dry_run=}")
+    logger.debug(f"{to_add_vip_steam_ids=}")
+    logger.debug(f"{current_vips=}")
     for steam_id_64 in to_add_vip_steam_ids:
         player = current_vips[steam_id_64]
         expiration_date = calc_vip_expiration_timestamp(
@@ -125,9 +121,5 @@ async def reward_players(
             )
         else:
             logger.debug(
-                "config.dry_run=%s adding VIP to steam_id_64=%s player=%s expiration_date=%s",
-                config.dry_run,
-                steam_id_64,
-                player,
-                expiration_date,
+                f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {expiration_date=}",
             )

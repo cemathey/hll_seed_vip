@@ -22,7 +22,7 @@ from hll_seed_vip.models import (
 def load_config(path: Path) -> ServerConfig:
     with open(path) as fp:
         raw_config: ConfigType = yaml.safe_load(fp)
-    logger.debug("raw_config=%s", raw_config)
+    logger.debug(f"{raw_config=}")
 
     requirements = ConfigRequirementsType(**raw_config["requirements"])
     vip_reward = ConfigVipRewardType(**raw_config["vip_reward"])
@@ -66,9 +66,7 @@ def check_population_conditions(config: ServerConfig, gamestate: GameState):
 
     if not all_met(player_count_conditions):
         logger.debug(
-            "player_count_conditions[0].is_met()=%s player_count_conditions[1].is_met()=%s breaking",
-            player_count_conditions[0].is_met(),
-            player_count_conditions[1].is_met(),
+            f"{player_count_conditions[0].is_met()=} {player_count_conditions[1].is_met()=} breaking",
         )
         return False
 

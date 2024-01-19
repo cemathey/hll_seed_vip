@@ -27,10 +27,7 @@ async def main():
             gamestate = await get_gamestate(client, config.base_url)
 
             logger.debug(
-                "%s online players (`get_players`), %s allied %s axis players (gamestate)",
-                len(players.players.keys()),
-                gamestate.num_allied_players,
-                gamestate.num_axis_players,
+                f"{len(players.players.keys())} online players (`get_players`), {gamestate.num_allied_players} allied {gamestate.num_axis_players} axis players (gamestate)",
             )
             try:
                 to_add_vip_steam_ids, sleep_time = collect_steam_ids(
@@ -41,16 +38,14 @@ async def main():
                 )
             except ValueError as e:
                 logger.error(
-                    "sleeping config.poll_time_seeding=%s due to %s",
-                    config.poll_time_seeding,
-                    e,
+                    f"sleeping config.poll_time_seeding={config.poll_time_seeding} due to {e}",
                 )
                 await trio.sleep(config.poll_time_seeding)
                 continue
 
             if is_seeded(config=config, gamestate=gamestate):
                 seeded_timestamp = datetime.now(tz=timezone.utc)
-                logger.info("server seeded at %s", seeded_timestamp.isoformat())
+                logger.info(f"server seeded at {seeded_timestamp.isoformat()}")
                 current_vips = await get_vips(client, config.base_url)
                 # add VIPs
 
@@ -68,7 +63,7 @@ async def main():
                 # not seeded
                 sleep_time = config.poll_time_seeding
 
-            logger.debug("sleeping sleep_time=%s", sleep_time)
+            logger.debug(f"sleeping {sleep_time=}")
             await trio.sleep(sleep_time)
 
 
