@@ -66,7 +66,7 @@ def check_population_conditions(config: ServerConfig, gamestate: GameState):
 
     if not all_met(player_count_conditions):
         logger.debug(
-            f"{player_count_conditions[0].is_met()=} {player_count_conditions[1].is_met()=} breaking",
+            f"{player_count_conditions[0]}={player_count_conditions[0].is_met()=} {player_count_conditions[1]}={player_count_conditions[1].is_met()=} breaking",
         )
         return False
 
@@ -128,7 +128,7 @@ def collect_steam_ids(
         gamestate=gamestate,
     ):
         logger.debug("population conditions not met")
-        raise ValueError()
+        raise ValueError("population conditions not met")
     else:
         player_conditions_steam_ids = check_player_conditions(
             config=config, server_pop=players
