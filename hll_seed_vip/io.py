@@ -89,7 +89,11 @@ async def add_vip(
     response = await client.post(url=url, data=body)
     result = response.json()["result"]
     logger.info(
-        f"added VIP for {steam_id_64=} {expiration_timestamp=} {player_name=} {result=}"
+        "added VIP for steam_id_64=%s expiration_timestamp=%s player_name=%s result=%s",
+        steam_id_64,
+        expiration_timestamp,
+        player_name,
+        result,
     )
 
 
@@ -121,5 +125,9 @@ async def reward_players(
             )
         else:
             logger.debug(
-                f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {expiration_date=}"
+                "config.dry_run=%s adding VIP to steam_id_64=%s player=%s expiration_date=%s",
+                config.dry_run,
+                steam_id_64,
+                player,
+                expiration_date,
             )

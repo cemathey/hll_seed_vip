@@ -40,13 +40,17 @@ async def main():
                     cum_steam_ids=to_add_vip_steam_ids,
                 )
             except ValueError as e:
-                logger.error(f"sleeping {config.poll_time_seeding=} due to %s", e)
+                logger.error(
+                    "sleeping config.poll_time_seeding=%s due to %s",
+                    config.poll_time_seeding,
+                    e,
+                )
                 await trio.sleep(config.poll_time_seeding)
                 continue
 
             if is_seeded(config=config, gamestate=gamestate):
                 seeded_timestamp = datetime.now(tz=timezone.utc)
-                logger.info(f"server seeded at {seeded_timestamp.isoformat()}")
+                logger.info("server seeded at %s", seeded_timestamp.isoformat())
                 current_vips = await get_vips(client, config.base_url)
                 # add VIPs
 
@@ -64,10 +68,10 @@ async def main():
                 # not seeded
                 sleep_time = config.poll_time_seeding
 
-            logger.debug(f"sleeping {sleep_time=}")
+            logger.debug("sleeping sleep_time=%s", sleep_time)
             await trio.sleep(sleep_time)
 
 
 if __name__ == "__main__":
-    logger.add(f"./logs/seeding.log", level=os.getenv("LOGURU_LEVEL", "DEBUG"))
+    logger.add("./logs/seeding.log", level=os.getenv("LOGURU_LEVEL", "DEBUG"))
     trio.run(main)
