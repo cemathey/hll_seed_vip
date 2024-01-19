@@ -26,6 +26,12 @@ async def main():
             players = await get_online_players(client, config.base_url)
             gamestate = await get_gamestate(client, config.base_url)
 
+            logger.debug(
+                "%s online players (`get_players`), %s allied %s axis players (gamestate)",
+                len(players.players.keys()),
+                gamestate.num_allied_players,
+                gamestate.num_axis_players,
+            )
             try:
                 to_add_vip_steam_ids, sleep_time = collect_steam_ids(
                     config=config,
@@ -33,8 +39,8 @@ async def main():
                     gamestate=gamestate,
                     cum_steam_ids=to_add_vip_steam_ids,
                 )
-            except ValueError:
-                logger.debug(f"sleeping {config.poll_time_seeding=}")
+            except ValueError as e:
+                logger.error(f"sleeping {config.poll_time_seeding=} due to %s", e)
                 await trio.sleep(config.poll_time_seeding)
                 continue
 

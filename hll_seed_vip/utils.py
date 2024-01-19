@@ -64,9 +64,6 @@ def check_population_conditions(config: ServerConfig, gamestate: GameState):
         ),
     ]
 
-    logger.debug(f"{gamestate=}")
-    logger.debug(f"{player_count_conditions=}")
-
     if not all_met(player_count_conditions):
         logger.debug(
             f"{player_count_conditions[0].is_met()=} {player_count_conditions[1].is_met()=} breaking"
@@ -123,10 +120,6 @@ def collect_steam_ids(
     gamestate: GameState,
     cum_steam_ids: set[str] | None = None,
 ) -> tuple[set[str], int]:
-    logger.debug(
-        f"collect_steam_ids {config=} {players=} {gamestate=} {cum_steam_ids=}"
-    )
-
     if cum_steam_ids is None:
         cum_steam_ids = set()
 

@@ -19,8 +19,6 @@ async def get_vips(
     endpoint="get_vip_ids",
 ) -> dict[str, VipPlayer]:
     url = f"{server_url}api/{endpoint}"
-    logger.debug(f"{server_url=} {endpoint=} {url=}")
-
     response = await client.get(url=url)
     raw_vips = response.json()["result"]
     return {
@@ -42,8 +40,6 @@ async def get_gamestate(
     endpoint="get_gamestate",
 ) -> GameState:
     url = f"{server_url}api/{endpoint}"
-    logger.debug(f"{server_url=} {endpoint=} {url=}")
-
     response = await client.get(url=url)
     result = response.json()["result"]
 
@@ -59,19 +55,13 @@ async def get_online_players(
     endpoint="get_players",
 ) -> ServerPopulation:
     url = f"{server_url}api/{endpoint}"
-    logger.debug(f"{server_url=} {endpoint=} {url=}")
-
     response = await client.get(url=url)
     result = response.json()["result"]
-
     players = {}
     for raw_player in result:
         name = raw_player["name"]
         steam_id_64 = steam_id_64 = raw_player["steam_id_64"]
         current_playtime_seconds = raw_player["profile"]["current_playtime_seconds"]
-
-        logger.debug(f"{name=} {steam_id_64=} {current_playtime_seconds=}")
-
         p = Player(
             name=name,
             steam_id_64=steam_id_64,
@@ -91,8 +81,6 @@ async def add_vip(
     endpoint="do_add_vip",
 ):
     url = f"{server_url}api/{endpoint}"
-    logger.debug(f"{endpoint=} {url=}")
-
     body = {
         "steam_id_64": steam_id_64,
         "name": player_name,
@@ -113,15 +101,15 @@ async def reward_players(
     seeded_timestamp: datetime,
 ):
     # TODO: make concurrent
+    logger.debug("Rewarding players with VIP dry_run=%s", config.dry_run)
+    logger.debug("to_add_vip_steam_ids=%s", to_add_vip_steam_ids)
+    logger.debug("current_vips=%s", current_vips)
     for steam_id_64 in to_add_vip_steam_ids:
         player = current_vips[steam_id_64]
         expiration_date = calc_vip_expiration_timestamp(
             config=config,
             expiration=player.expiration_date,
             from_time=seeded_timestamp,
-        )
-        logger.info(
-            f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {expiration_date=}"
         )
         if not config.dry_run:
             await add_vip(
@@ -130,4 +118,8 @@ async def reward_players(
                 steam_id_64=steam_id_64,
                 player_name=player.player.name,
                 expiration_timestamp=expiration_date,
+            )
+        else:
+            logger.debug(
+                f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {expiration_date=}"
             )
