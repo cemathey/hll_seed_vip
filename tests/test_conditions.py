@@ -146,14 +146,14 @@ def test_collect_steam_ids():
     cum_steam_ids = set()
 
     cum_steam_ids, _ = collect_steam_ids(
-        config=config, players=players, gamestate=gamestate, cum_steam_ids=cum_steam_ids
+        config=config, players=players, cum_steam_ids=cum_steam_ids
     )
 
     players = make_mock_server_pop(
         players={s: make_mock_player(steam_id_64=s) for s in steam_ids[:-1]}
     )
     cum_steam_ids, _ = collect_steam_ids(
-        config=config, players=players, gamestate=gamestate, cum_steam_ids=cum_steam_ids
+        config=config, players=players, cum_steam_ids=cum_steam_ids
     )
 
     assert cum_steam_ids == set(steam_ids)
@@ -178,14 +178,14 @@ def test_collect_steam_ids_online_only():
     cum_steam_ids = set()
 
     cum_steam_ids, _ = collect_steam_ids(
-        config=config, players=players, gamestate=gamestate, cum_steam_ids=cum_steam_ids
+        config=config, players=players, cum_steam_ids=cum_steam_ids
     )
 
     players = make_mock_server_pop(
         players={s: make_mock_player(steam_id_64=s) for s in steam_ids[:-1]}
     )
     cum_steam_ids, _ = collect_steam_ids(
-        config=config, players=players, gamestate=gamestate, cum_steam_ids=cum_steam_ids
+        config=config, players=players, cum_steam_ids=cum_steam_ids
     )
 
     assert cum_steam_ids == set(steam_ids[:-1])

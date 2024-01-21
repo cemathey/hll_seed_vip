@@ -21,7 +21,7 @@ async def main():
     config = load_config(Path("config/config.yml"))
 
     async with httpx.AsyncClient(headers=headers) as client:
-        to_add_vip_steam_ids: set[str] | None = None
+        to_add_vip_steam_ids: set[str] | None = set()
         while True:
             players = await get_online_players(client, config.base_url)
             gamestate = await get_gamestate(client, config.base_url)
@@ -29,19 +29,11 @@ async def main():
             logger.debug(
                 f"{len(players.players.keys())} online players (`get_players`), {gamestate.num_allied_players} allied {gamestate.num_axis_players} axis players (gamestate)",
             )
-            try:
-                to_add_vip_steam_ids, sleep_time = collect_steam_ids(
-                    config=config,
-                    players=players,
-                    gamestate=gamestate,
-                    cum_steam_ids=to_add_vip_steam_ids,
-                )
-            except ValueError as e:
-                logger.error(
-                    f"sleeping config.poll_time_seeding={config.poll_time_seeding} due to {e}",
-                )
-                await trio.sleep(config.poll_time_seeding)
-                continue
+            to_add_vip_steam_ids, sleep_time = collect_steam_ids(
+                config=config,
+                players=players,
+                cum_steam_ids=to_add_vip_steam_ids,
+            )
 
             if is_seeded(config=config, gamestate=gamestate):
                 seeded_timestamp = datetime.now(tz=timezone.utc)

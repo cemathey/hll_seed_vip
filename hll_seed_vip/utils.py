@@ -64,10 +64,10 @@ def check_population_conditions(config: ServerConfig, gamestate: GameState):
         ),
     ]
 
+    logger.debug(
+        f"{player_count_conditions[0]}={player_count_conditions[0].is_met()} {player_count_conditions[1]}={player_count_conditions[1].is_met()} breaking",
+    )
     if not all_met(player_count_conditions):
-        logger.debug(
-            f"{player_count_conditions[0]}={player_count_conditions[0].is_met()} {player_count_conditions[1]}={player_count_conditions[1].is_met()} breaking",
-        )
         return False
 
     return True
@@ -117,26 +117,15 @@ def calc_vip_expiration_timestamp(
 def collect_steam_ids(
     config: ServerConfig,
     players: ServerPopulation,
-    gamestate: GameState,
-    cum_steam_ids: set[str] | None = None,
+    cum_steam_ids: set[str],
 ) -> tuple[set[str], int]:
-    if cum_steam_ids is None:
-        cum_steam_ids = set()
+    player_conditions_steam_ids = check_player_conditions(
+        config=config, server_pop=players
+    )
 
-    if not check_population_conditions(
-        config=config,
-        gamestate=gamestate,
-    ):
-        logger.debug("population conditions not met")
-        raise ValueError("population conditions not met")
+    if config.online_when_seeded:
+        cum_steam_ids = set(player_conditions_steam_ids)
     else:
-        player_conditions_steam_ids = check_player_conditions(
-            config=config, server_pop=players
-        )
-
-        if config.online_when_seeded:
-            cum_steam_ids = set(player_conditions_steam_ids)
-        else:
-            cum_steam_ids |= player_conditions_steam_ids
+        cum_steam_ids |= player_conditions_steam_ids
 
     return cum_steam_ids, config.poll_time_seeding
