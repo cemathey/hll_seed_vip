@@ -22,6 +22,8 @@ async def main():
 
     async with httpx.AsyncClient(headers=headers) as client:
         to_add_vip_steam_ids: set[str] | None = set()
+        gamestate = await get_gamestate(client, config.base_url)
+        is_seeding = not is_seeded(config=config, gamestate=gamestate)
         while True:
             players = await get_online_players(client, config.base_url)
             gamestate = await get_gamestate(client, config.base_url)
@@ -35,7 +37,7 @@ async def main():
                 cum_steam_ids=to_add_vip_steam_ids,
             )
 
-            if is_seeded(config=config, gamestate=gamestate):
+            if is_seeding and is_seeded(config=config, gamestate=gamestate):
                 seeded_timestamp = datetime.now(tz=timezone.utc)
                 logger.info(f"server seeded at {seeded_timestamp.isoformat()}")
                 current_vips = await get_vips(client, config.base_url)
@@ -51,8 +53,9 @@ async def main():
 
                 to_add_vip_steam_ids.clear()
                 sleep_time = config.poll_time_seeded
+                is_seeding = False
             else:
-                # not seeded
+                is_seeding = True
                 sleep_time = config.poll_time_seeding
 
             logger.debug(f"sleeping {sleep_time=}")
