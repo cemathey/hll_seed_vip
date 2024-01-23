@@ -118,7 +118,7 @@ def collect_steam_ids(
     config: ServerConfig,
     players: ServerPopulation,
     cum_steam_ids: set[str],
-) -> tuple[set[str], int]:
+) -> set[str]:
     player_conditions_steam_ids = check_player_conditions(
         config=config, server_pop=players
     )
@@ -128,4 +128,4 @@ def collect_steam_ids(
     else:
         cum_steam_ids |= player_conditions_steam_ids
 
-    return cum_steam_ids, config.poll_time_seeding
+    return cum_steam_ids
