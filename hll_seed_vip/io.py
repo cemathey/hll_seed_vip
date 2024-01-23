@@ -20,6 +20,8 @@ async def get_vips(
 ) -> dict[str, VipPlayer]:
     url = f"{server_url}api/{endpoint}"
     response = await client.get(url=url)
+    response.raise_for_status()
+
     raw_vips = response.json()["result"]
     return {
         vip["steam_id_64"]: VipPlayer(
@@ -41,6 +43,7 @@ async def get_gamestate(
 ) -> GameState:
     url = f"{server_url}api/{endpoint}"
     response = await client.get(url=url)
+    response.raise_for_status()
     result = response.json()["result"]
 
     return GameState(
@@ -56,6 +59,7 @@ async def get_online_players(
 ) -> ServerPopulation:
     url = f"{server_url}api/{endpoint}"
     response = await client.get(url=url)
+    response.raise_for_status()
     result = response.json()["result"]
     players = {}
     for raw_player in result:
@@ -87,6 +91,7 @@ async def add_vip(
         "expiration": expiration_timestamp,
     }
     response = await client.post(url=url, data=body)
+    response.raise_for_status()
     result = response.json()["result"]
     logger.info(
         f"added VIP for {steam_id_64=} {expiration_timestamp=} {player_name=} {result=}",
