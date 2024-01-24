@@ -114,16 +114,17 @@ async def reward_players(
     to_add_vip_steam_ids: set[str],
     current_vips: dict[str, VipPlayer],
     seeded_timestamp: datetime,
+    players_lookup: dict[str, str],
 ):
     # TODO: make concurrent
     logger.debug(f"Rewarding players with VIP {config.dry_run=}")
     logger.debug(f"{to_add_vip_steam_ids=}")
     logger.debug(f"{current_vips=}")
     for steam_id_64 in to_add_vip_steam_ids:
-        player = current_vips[steam_id_64]
+        player = current_vips.get(steam_id_64)
         expiration_date = calc_vip_expiration_timestamp(
             config=config,
-            expiration=player.expiration_date,
+            expiration=player.expiration_date if player else None,
             from_time=seeded_timestamp,
         )
         msg = format_player_message(
@@ -138,7 +139,11 @@ async def reward_players(
                 client=client,
                 server_url=config.base_url,
                 steam_id_64=steam_id_64,
-                player_name=player.player.name,
+                player_name=player.player.name
+                if player
+                else format_vip_reward_name(
+                    players_lookup.get(steam_id_64, "No player name found")
+                ),
                 expiration_timestamp=expiration_date,
             )
 

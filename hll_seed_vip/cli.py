@@ -32,11 +32,16 @@ async def main():
         headers=headers, event_hooks={"response": [raise_on_4xx_5xx]}
     ) as client:
         to_add_vip_steam_ids: set[str] | None = set()
+        player_name_lookup: dict[str, str] = {}
         gamestate = await get_gamestate(client, config.base_url)
         is_seeding = not is_seeded(config=config, gamestate=gamestate)
         while True:
             players = await get_online_players(client, config.base_url)
             gamestate = await get_gamestate(client, config.base_url)
+
+            player_name_lookup |= {
+                p.steam_id_64: p.name for p in players.players.values()
+            }
 
             logger.debug(
                 f"{is_seeding=} {len(players.players.keys())} online players (`get_players`), {gamestate.num_allied_players} allied {gamestate.num_axis_players} axis players (gamestate)",
@@ -58,6 +63,7 @@ async def main():
                     to_add_vip_steam_ids=to_add_vip_steam_ids,
                     current_vips=current_vips,
                     seeded_timestamp=seeded_timestamp,
+                    players_lookup=player_name_lookup,
                 )
 
                 to_add_vip_steam_ids.clear()
