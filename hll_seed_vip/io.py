@@ -1,3 +1,4 @@
+import urllib.parse
 from datetime import datetime
 
 import httpx
@@ -10,7 +11,7 @@ from hll_seed_vip.models import (
     ServerPopulation,
     VipPlayer,
 )
-from hll_seed_vip.utils import calc_vip_expiration_timestamp
+from hll_seed_vip.utils import calc_vip_expiration_timestamp, format_player_message
 
 
 async def get_vips(
@@ -94,6 +95,19 @@ async def add_vip(
     )
 
 
+async def message_player(
+    client: httpx.AsyncClient,
+    server_url: str,
+    steam_id_64: str,
+    message: str,
+    endpoint="api/do_message_player",
+):
+    url = urllib.parse.urljoin(server_url, endpoint)
+    body = {"steam_id_64": steam_id_64, "message": message}
+    response = await client.post(url=url, data=body)
+    logger.info(f"messaged player {steam_id_64}: {message}")
+
+
 async def reward_players(
     client: httpx.AsyncClient,
     config: ServerConfig,
@@ -112,6 +126,13 @@ async def reward_players(
             expiration=player.expiration_date,
             from_time=seeded_timestamp,
         )
+        msg = format_player_message(
+            config.player_message,
+            vip_reward=config.vip_reward,
+            vip_expiration=expiration_date,
+            nice_delta=config.nice_delta,
+            nice_date=config.nice_date,
+        )
         if not config.dry_run:
             await add_vip(
                 client=client,
@@ -120,7 +141,18 @@ async def reward_players(
                 player_name=player.player.name,
                 expiration_timestamp=expiration_date,
             )
+
+            if config.player_message:
+                logger.debug(f"{config.dry_run=} messaging {steam_id_64}: {msg}")
+                await message_player(
+                    client,
+                    server_url=config.base_url,
+                    steam_id_64=steam_id_64,
+                    message=msg,
+                )
+
         else:
             logger.debug(
                 f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {expiration_date=}",
             )
+            logger.debug(f"{config.dry_run=} messaging {steam_id_64}: {msg}")

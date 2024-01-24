@@ -22,6 +22,9 @@ class ConfigRequirementsType(TypedDict):
 class ConfigVipRewardType(TypedDict):
     cumulative: bool
     timeframe: ConfigTimeDeltaType
+    player_message: str
+    nice_delta: bool
+    nice_date: bool
 
 
 class ConfigType(TypedDict):
@@ -53,6 +56,9 @@ class ServerConfig(pydantic.BaseModel):
     # rewards
     cumulative_vip: bool
     vip_reward: timedelta
+    player_message: str
+    nice_delta: bool
+    nice_date: bool
 
     @pydantic.field_validator("base_url")
     @classmethod

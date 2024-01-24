@@ -48,6 +48,9 @@ def make_mock_config(
     online_when_seeded=False,
     cumulative_vip=False,
     vip_reward=timedelta(hours=24),
+    player_message="seed reward message",
+    nice_delta=True,
+    nice_date=True,
 ) -> ServerConfig:
     return ServerConfig(
         base_url=str(HttpUrl(url=url)),  # type: ignore
@@ -62,6 +65,9 @@ def make_mock_config(
         online_when_seeded=online_when_seeded,
         cumulative_vip=cumulative_vip,
         vip_reward=vip_reward,
+        player_message=player_message,
+        nice_delta=nice_delta,
+        nice_date=nice_date,
     )
 
 
@@ -145,14 +151,14 @@ def test_collect_steam_ids():
     gamestate = make_mock_gamestate(allied=20, axis=20)
     cum_steam_ids = set()
 
-    cum_steam_ids, _ = collect_steam_ids(
+    cum_steam_ids = collect_steam_ids(
         config=config, players=players, cum_steam_ids=cum_steam_ids
     )
 
     players = make_mock_server_pop(
         players={s: make_mock_player(steam_id_64=s) for s in steam_ids[:-1]}
     )
-    cum_steam_ids, _ = collect_steam_ids(
+    cum_steam_ids = collect_steam_ids(
         config=config, players=players, cum_steam_ids=cum_steam_ids
     )
 
@@ -177,14 +183,14 @@ def test_collect_steam_ids_online_only():
     gamestate = make_mock_gamestate(allied=20, axis=20)
     cum_steam_ids = set()
 
-    cum_steam_ids, _ = collect_steam_ids(
+    cum_steam_ids = collect_steam_ids(
         config=config, players=players, cum_steam_ids=cum_steam_ids
     )
 
     players = make_mock_server_pop(
         players={s: make_mock_player(steam_id_64=s) for s in steam_ids[:-1]}
     )
-    cum_steam_ids, _ = collect_steam_ids(
+    cum_steam_ids = collect_steam_ids(
         config=config, players=players, cum_steam_ids=cum_steam_ids
     )
 

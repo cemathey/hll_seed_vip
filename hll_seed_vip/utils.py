@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Iterable
 
 import yaml
+from humanize import naturaldelta, naturaltime
 from loguru import logger
 
 from hll_seed_vip.models import (
@@ -40,6 +41,7 @@ def load_config(path: Path) -> ServerConfig:
         online_when_seeded=requirements["online_when_seeded"],
         cumulative_vip=vip_reward["cumulative"],
         vip_reward=timedelta(**vip_reward["timeframe"]),
+        player_message=vip_reward["player_message"],
     )
 
 
@@ -129,3 +131,23 @@ def collect_steam_ids(
         cum_steam_ids |= player_conditions_steam_ids
 
     return cum_steam_ids
+
+
+def format_player_message(
+    message: str,
+    vip_reward: timedelta,
+    vip_expiration: datetime,
+    nice_delta: bool = True,
+    nice_date: bool = True,
+) -> str:
+    if nice_delta:
+        delta = naturaldelta(vip_reward)
+    else:
+        delta = vip_reward
+
+    if nice_date:
+        date = naturaltime(vip_expiration)
+    else:
+        date = vip_expiration.isoformat()
+
+    return message.format(vip_reward=delta, vip_expiration=date)
