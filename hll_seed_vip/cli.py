@@ -2,13 +2,19 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
+import discord_webhook as discord
 import httpx
 import trio
 from loguru import logger
 
 from hll_seed_vip.constants import API_KEY, API_KEY_FORMAT
 from hll_seed_vip.io import get_gamestate, get_online_players, get_vips, reward_players
-from hll_seed_vip.utils import collect_steam_ids, is_seeded, load_config
+from hll_seed_vip.utils import (
+    collect_steam_ids,
+    is_seeded,
+    load_config,
+    make_seed_announcement_embed,
+)
 
 CONFIG_FILE_NAME = os.getenv("CONFIG_FILE_NAME", "config.yml")
 LOG_FILE_NAME = os.getenv("LOG_FILE_NAME", "seeding.log")
@@ -28,6 +34,10 @@ async def main():
 
     config = load_config(Path(CONFIG_FILE_NAME))
 
+    wh: discord.DiscordWebhook | None = None
+    if config.discord_webhook:
+        wh = discord.DiscordWebhook(url=str(config.discord_webhook))
+
     async with httpx.AsyncClient(
         headers=headers, event_hooks={"response": [raise_on_4xx_5xx]}
     ) as client:
@@ -35,6 +45,17 @@ async def main():
         player_name_lookup: dict[str, str] = {}
         gamestate = await get_gamestate(client, config.base_url)
         is_seeding = not is_seeded(config=config, gamestate=gamestate)
+        # if wh:
+        #     embed = make_seed_announcement_embed(
+        #         message=config.discord_seeding_complete_message,
+        #         current_map=gamestate.current_map,
+        #         time_remaining=gamestate.raw_time_remaining,
+        #         num_allied_players=gamestate.num_allied_players,
+        #         num_axis_players=gamestate.num_axis_players,
+        #     )
+        #     if embed:
+        #         wh.add_embed(embed)
+        #         wh.execute(remove_embeds=True)
         while True:
             players = await get_online_players(client, config.base_url)
             gamestate = await get_gamestate(client, config.base_url)
@@ -65,6 +86,18 @@ async def main():
                     seeded_timestamp=seeded_timestamp,
                     players_lookup=player_name_lookup,
                 )
+
+                if wh:
+                    embed = make_seed_announcement_embed(
+                        message=config.discord_seeding_complete_message,
+                        current_map=gamestate.current_map,
+                        time_remaining=gamestate.raw_time_remaining,
+                        num_allied_players=gamestate.num_allied_players,
+                        num_axis_players=gamestate.num_axis_players,
+                    )
+                    if embed:
+                        wh.add_embed(embed)
+                        wh.execute(remove_embeds=True)
 
                 to_add_vip_steam_ids.clear()
                 is_seeding = False

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Iterable
 
+import discord_webhook as discord
 import yaml
 from humanize import naturaldelta, naturaltime
 from loguru import logger
@@ -30,6 +31,8 @@ def load_config(path: Path) -> ServerConfig:
 
     return ServerConfig(
         base_url=raw_config["base_url"],
+        discord_webhook=raw_config.get("discord_webhook"),  # type: ignore
+        discord_seeding_complete_message=raw_config["discord_seeding_complete_message"],
         dry_run=raw_config["dry_run"],
         poll_time_seeding=raw_config["poll_time_seeding"],
         poll_time_seeded=raw_config["poll_time_seeded"],
@@ -153,3 +156,27 @@ def format_player_message(
         date = vip_expiration.isoformat()
 
     return message.format(vip_reward=delta, vip_expiration=date)
+
+
+def make_seed_announcement_embed(
+    message: str | None,
+    current_map: str,
+    time_remaining: str,
+    num_axis_players: int,
+    num_allied_players: int,
+) -> discord.DiscordEmbed | None:
+    if not message:
+        return
+
+    embed = discord.DiscordEmbed(title=message)
+    embed.add_embed_field(name="Current Map", value=current_map)
+    embed.add_embed_field(name="Time Remaining", value=time_remaining)
+    embed.add_embed_field(
+        name="Players Per Team", value=f"{num_allied_players} : {num_allied_players}"
+    )
+
+    return embed
+
+
+def format_vip_reward_name(player_name: str):
+    return f"{player_name} - HLL Seed VIP"

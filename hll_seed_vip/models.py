@@ -29,6 +29,8 @@ class ConfigVipRewardType(TypedDict):
 
 class ConfigType(TypedDict):
     base_url: str
+    discord_webhook: str
+    discord_seeding_complete_message: str
     dry_run: bool
     poll_time_seeding: int
     poll_time_seeded: int
@@ -38,6 +40,8 @@ class ConfigType(TypedDict):
 
 class ServerConfig(pydantic.BaseModel):
     base_url: str
+    discord_webhook: pydantic.HttpUrl | None
+    discord_seeding_complete_message: str
     dry_run: bool
 
     poll_time_seeding: int
@@ -82,6 +86,8 @@ class ServerPopulation(pydantic.BaseModel):
 
 
 class GameState(pydantic.BaseModel):
+    raw_time_remaining: str
+    current_map: str
     num_allied_players: int
     num_axis_players: int
 

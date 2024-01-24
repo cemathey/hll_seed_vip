@@ -11,7 +11,11 @@ from hll_seed_vip.models import (
     ServerPopulation,
     VipPlayer,
 )
-from hll_seed_vip.utils import calc_vip_expiration_timestamp, format_player_message
+from hll_seed_vip.utils import (
+    calc_vip_expiration_timestamp,
+    format_player_message,
+    format_vip_reward_name,
+)
 
 
 async def get_vips(
@@ -46,6 +50,8 @@ async def get_gamestate(
     result = response.json()["result"]
 
     return GameState(
+        raw_time_remaining=result["raw_time_remaining"],
+        current_map=result["current_map"],
         num_allied_players=result["num_allied_players"],
         num_axis_players=result["num_axis_players"],
     )

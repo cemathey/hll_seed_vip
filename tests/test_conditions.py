@@ -13,8 +13,18 @@ from hll_seed_vip.models import (
 from hll_seed_vip.utils import all_met, calc_vip_expiration_timestamp, collect_steam_ids
 
 
-def make_mock_gamestate(allied: int = 0, axis: int = 0) -> GameState:
-    return GameState(num_allied_players=allied, num_axis_players=axis)
+def make_mock_gamestate(
+    time_remaining: str = "1:00:00",
+    current_map: str = "SomeMap",
+    allied: int = 0,
+    axis: int = 0,
+) -> GameState:
+    return GameState(
+        raw_time_remaining=time_remaining,
+        current_map=current_map,
+        num_allied_players=allied,
+        num_axis_players=axis,
+    )
 
 
 def make_mock_player(
@@ -54,6 +64,8 @@ def make_mock_config(
 ) -> ServerConfig:
     return ServerConfig(
         base_url=str(HttpUrl(url=url)),  # type: ignore
+        discord_webhook=None,
+        discord_seeding_complete_message="Server is live",
         dry_run=dry_run,
         poll_time_seeded=poll_time_seeded,
         poll_time_seeding=poll_time_seeding,
