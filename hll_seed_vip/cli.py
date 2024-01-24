@@ -10,10 +10,12 @@ from hll_seed_vip.constants import API_KEY, API_KEY_FORMAT
 from hll_seed_vip.io import get_gamestate, get_online_players, get_vips, reward_players
 from hll_seed_vip.utils import collect_steam_ids, is_seeded, load_config
 
-CONFIG_FILE = "config.yml"
+CONFIG_FILE_NAME = os.getenv("CONFIG_FILE_NAME", "config.yml")
+LOG_FILE_NAME = os.getenv("LOG_FILE_NAME", "seeding.log")
+LOG_DIR = os.getenv("LOG_DIR", "./logs")
 
 
-def raise_on_4xx_5xx(response):
+async def raise_on_4xx_5xx(response):
     response.raise_for_status()
 
 
@@ -24,7 +26,7 @@ async def main():
     if api_key is None:
         raise ValueError(f"{API_KEY} must be set")
 
-    config = load_config(Path(CONFIG_FILE))
+    config = load_config(Path(CONFIG_FILE_NAME))
 
     async with httpx.AsyncClient(
         headers=headers, event_hooks={"response": [raise_on_4xx_5xx]}
@@ -69,10 +71,13 @@ async def main():
             else:
                 sleep_time = config.poll_time_seeded
 
-            logger.debug(f"sleeping {sleep_time=}")
+            logger.info(f"sleeping {sleep_time=}")
             await trio.sleep(sleep_time)
 
 
 if __name__ == "__main__":
-    logger.add("./logs/seeding.log", level=os.getenv("LOGURU_LEVEL", "DEBUG"))
+    os.makedirs(LOG_DIR, exist_ok=True)
+    logger.add(
+        Path(LOG_DIR).joinpath(LOG_FILE_NAME), level=os.getenv("LOGURU_LEVEL", "DEBUG")
+    )
     trio.run(main)
