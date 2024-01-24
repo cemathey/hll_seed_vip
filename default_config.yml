@@ -1,4 +1,6 @@
 base_url: ""
+discord_webhook: ""
+discord_seeding_complete_message: "Server is live!"
 dry_run: true
 poll_time_seeding: 60
 poll_time_seeded: 300
