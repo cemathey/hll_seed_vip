@@ -11,6 +11,10 @@ from hll_seed_vip.io import get_gamestate, get_online_players, get_vips, reward_
 from hll_seed_vip.utils import collect_steam_ids, is_seeded, load_config
 
 
+def raise_on_4xx_5xx(response):
+    response.raise_for_status()
+
+
 async def main():
     api_key = os.getenv(API_KEY)
     headers = {"Authorization": API_KEY_FORMAT.format(api_key=api_key)}
@@ -20,7 +24,9 @@ async def main():
 
     config = load_config(Path("config/config.yml"))
 
-    async with httpx.AsyncClient(headers=headers) as client:
+    async with httpx.AsyncClient(
+        headers=headers, event_hooks={"response": [raise_on_4xx_5xx]}
+    ) as client:
         to_add_vip_steam_ids: set[str] | None = set()
         gamestate = await get_gamestate(client, config.base_url)
         is_seeding = not is_seeded(config=config, gamestate=gamestate)
