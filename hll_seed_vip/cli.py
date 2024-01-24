@@ -17,6 +17,7 @@ from hll_seed_vip.utils import (
 )
 
 CONFIG_FILE_NAME = os.getenv("CONFIG_FILE_NAME", "config.yml")
+CONFIG_DIR = os.getenv("CONFIG_DIR", "./config")
 LOG_FILE_NAME = os.getenv("LOG_FILE_NAME", "seeding.log")
 LOG_DIR = os.getenv("LOG_DIR", "./logs")
 
@@ -32,7 +33,7 @@ async def main():
     if api_key is None:
         raise ValueError(f"{API_KEY} must be set")
 
-    config = load_config(Path(CONFIG_FILE_NAME))
+    config = load_config(Path(CONFIG_DIR).joinpath(CONFIG_FILE_NAME))
 
     wh: discord.DiscordWebhook | None = None
     if config.discord_webhook:
@@ -116,6 +117,7 @@ async def main():
 
 if __name__ == "__main__":
     os.makedirs(LOG_DIR, exist_ok=True)
+    os.makedirs(CONFIG_DIR, exist_ok=True)
     logger.add(
         Path(LOG_DIR).joinpath(LOG_FILE_NAME), level=os.getenv("LOGURU_LEVEL", "DEBUG")
     )
