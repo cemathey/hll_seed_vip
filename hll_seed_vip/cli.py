@@ -51,11 +51,12 @@ async def main():
                 )
 
                 to_add_vip_steam_ids.clear()
-                sleep_time = config.poll_time_seeded
                 is_seeding = False
             elif not is_seeding and not is_seeded(config=config, gamestate=gamestate):
                 logger.debug(f"not is_seeding and not is_seeded")
                 is_seeding = True
+
+            if is_seeding:
                 sleep_time = config.poll_time_seeding
             else:
                 sleep_time = config.poll_time_seeded
