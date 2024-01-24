@@ -1,6 +1,3 @@
-# API key is set as a env var
-# TODO: seed message
-# TODO: logging webhooks
 base_url: ""
 dry_run: true
 poll_time_seeding: 60
@@ -19,6 +16,9 @@ vip_reward:
   cumulative: true
   timeframe:
     minutes: 0
-    hours: 24
-    days: 0
+    hours: 0
+    days: 1
     weeks: 0
+  player_message: "Thank you for helping us seed.\n\nYou've been granted {vip_reward}\n\nYour VIP currently expires: {vip_expiration}"
+  nice_delta: yes
+  nice_date: yes
