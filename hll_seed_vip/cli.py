@@ -10,6 +10,8 @@ from hll_seed_vip.constants import API_KEY, API_KEY_FORMAT
 from hll_seed_vip.io import get_gamestate, get_online_players, get_vips, reward_players
 from hll_seed_vip.utils import collect_steam_ids, is_seeded, load_config
 
+CONFIG_FILE = "config.yml"
+
 
 def raise_on_4xx_5xx(response):
     response.raise_for_status()
@@ -22,7 +24,7 @@ async def main():
     if api_key is None:
         raise ValueError(f"{API_KEY} must be set")
 
-    config = load_config(Path("config/config.yml"))
+    config = load_config(Path(CONFIG_FILE))
 
     async with httpx.AsyncClient(
         headers=headers, event_hooks={"response": [raise_on_4xx_5xx]}
