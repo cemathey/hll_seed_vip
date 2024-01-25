@@ -12,6 +12,6 @@ services:
             - ./logs:/code/logs
             - ./config:/code/config
         restart: unless-stopped
-        image: hll_seed_vip:${DOCKER_TAG}
+        image: cericmathey/hll_seed_vip:${DOCKER_TAG}
         build:
           dockerfile: ./Dockerfile
