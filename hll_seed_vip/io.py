@@ -15,9 +15,11 @@ from hll_seed_vip.utils import (
     calc_vip_expiration_timestamp,
     format_player_message,
     format_vip_reward_name,
+    with_backoff_retry,
 )
 
 
+@with_backoff_retry()
 async def get_vips(
     client: httpx.AsyncClient,
     server_url: str,
@@ -40,6 +42,7 @@ async def get_vips(
     }
 
 
+@with_backoff_retry()
 async def get_gamestate(
     client: httpx.AsyncClient,
     server_url: str,
@@ -57,6 +60,7 @@ async def get_gamestate(
     )
 
 
+@with_backoff_retry()
 async def get_online_players(
     client: httpx.AsyncClient,
     server_url: str,
@@ -80,6 +84,7 @@ async def get_online_players(
     return ServerPopulation(players=players)
 
 
+@with_backoff_retry()
 async def add_vip(
     client: httpx.AsyncClient,
     server_url: str,
@@ -101,6 +106,7 @@ async def add_vip(
     )
 
 
+@with_backoff_retry()
 async def message_player(
     client: httpx.AsyncClient,
     server_url: str,

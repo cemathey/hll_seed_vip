@@ -1,9 +1,11 @@
-import os
 from datetime import datetime, timedelta
+from functools import wraps
 from pathlib import Path
 from typing import Iterable
 
 import discord_webhook as discord
+import httpx
+import trio
 import yaml
 from humanize import naturaldelta, naturaltime
 from loguru import logger
@@ -19,6 +21,29 @@ from hll_seed_vip.models import (
     ServerConfig,
     ServerPopulation,
 )
+
+
+def with_backoff_retry():
+    backoffs = (0, 1, 1.5, 2, 4, 8)
+
+    def decorator(func):
+        @wraps(func)
+        async def wrapped(*args, **kwargs):
+            server_url: str = args[1]
+            for idx, backoff in enumerate(backoffs):
+                try:
+                    return await func(*args, **kwargs)
+                except httpx.HTTPError as e:
+                    logger.error(e)
+                    logger.warning(
+                        f"Retrying attempt {idx+1}/{len(backoffs)+1}, sleeping for {backoff} seconds for {server_url} function={func.__name__}"
+                    )
+                    await trio.sleep(backoff)
+                    continue
+
+        return wrapped
+
+    return decorator
 
 
 def load_config(path: Path) -> ServerConfig:
