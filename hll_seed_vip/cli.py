@@ -8,7 +8,13 @@ import trio
 from loguru import logger
 
 from hll_seed_vip.constants import API_KEY, API_KEY_FORMAT
-from hll_seed_vip.io import get_gamestate, get_online_players, get_vips, reward_players
+from hll_seed_vip.io import (
+    get_gamestate,
+    get_online_players,
+    get_public_info,
+    get_vips,
+    reward_players,
+)
 from hll_seed_vip.utils import (
     collect_steam_ids,
     is_seeded,
@@ -44,6 +50,9 @@ async def main():
     ) as client:
         to_add_vip_steam_ids: set[str] | None = set()
         player_name_lookup: dict[str, str] = {}
+        prev_announced_player_count: int = 0
+        player_buckets = iter(config.discord_seeding_player_buckets)
+        next_player_bucket = next(player_buckets)
         gamestate = await get_gamestate(client, config.base_url)
         is_seeding = not is_seeded(config=config, gamestate=gamestate)
         # if wh:
@@ -51,6 +60,7 @@ async def main():
         #         message=config.discord_seeding_complete_message,
         #         current_map=gamestate.current_map,
         #         time_remaining=gamestate.raw_time_remaining,
+        #         player_count_message=config.discord_player_count_message,
         #         num_allied_players=gamestate.num_allied_players,
         #         num_axis_players=gamestate.num_axis_players,
         #     )
@@ -60,6 +70,7 @@ async def main():
         while True:
             players = await get_online_players(client, config.base_url)
             gamestate = await get_gamestate(client, config.base_url)
+            total_players = gamestate.num_allied_players + gamestate.num_axis_players
 
             player_name_lookup |= {
                 p.steam_id_64: p.name for p in players.players.values()
@@ -78,6 +89,7 @@ async def main():
                 seeded_timestamp = datetime.now(tz=timezone.utc)
                 logger.info(f"server seeded at {seeded_timestamp.isoformat()}")
                 current_vips = await get_vips(client, config.base_url)
+                player_buckets = iter(config.discord_seeding_player_buckets)
 
                 await reward_players(
                     client=client,
@@ -89,10 +101,12 @@ async def main():
                 )
 
                 if wh:
+                    public_info = await get_public_info(client, config.base_url)
                     embed = make_seed_announcement_embed(
                         message=config.discord_seeding_complete_message,
-                        current_map=gamestate.current_map,
+                        current_map=public_info["current_map_human_name"],
                         time_remaining=gamestate.raw_time_remaining,
+                        player_count_message=config.discord_player_count_message,
                         num_allied_players=gamestate.num_allied_players,
                         num_axis_players=gamestate.num_axis_players,
                     )
@@ -108,6 +122,31 @@ async def main():
 
             if is_seeding:
                 sleep_time = config.poll_time_seeding
+
+                if (
+                    wh
+                    and config.discord_seeding_player_buckets
+                    and total_players > prev_announced_player_count
+                    and total_players >= next_player_bucket
+                ):
+                    prev_announced_player_count = next_player_bucket
+                    next_player_bucket = next(player_buckets)
+
+                    public_info = await get_public_info(client, config.base_url)
+                    embed = make_seed_announcement_embed(
+                        message=config.discord_seeding_in_progress_message.format(
+                            player_count=total_players
+                        ),
+                        current_map=public_info["current_map_human_name"],
+                        time_remaining=gamestate.raw_time_remaining,
+                        player_count_message=config.discord_player_count_message,
+                        num_allied_players=gamestate.num_allied_players,
+                        num_axis_players=gamestate.num_axis_players,
+                    )
+                    if embed:
+                        wh.add_embed(embed)
+                        wh.execute(remove_embeds=True)
+
             else:
                 sleep_time = config.poll_time_seeded
 

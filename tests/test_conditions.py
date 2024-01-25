@@ -66,6 +66,9 @@ def make_mock_config(
         base_url=str(HttpUrl(url=url)),  # type: ignore
         discord_webhook=None,
         discord_seeding_complete_message="Server is live",
+        discord_seeding_in_progress_message="Server has reached {player_count} players",
+        discord_player_count_message="{num_allied_players} - {num_axis_players}",
+        discord_seeding_player_buckets=[10, 20, 30],
         dry_run=dry_run,
         poll_time_seeded=poll_time_seeded,
         poll_time_seeding=poll_time_seeding,

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 from pathlib import Path
 from typing import Iterable
@@ -58,6 +58,11 @@ def load_config(path: Path) -> ServerConfig:
         base_url=raw_config["base_url"],
         discord_webhook=raw_config.get("discord_webhook"),  # type: ignore
         discord_seeding_complete_message=raw_config["discord_seeding_complete_message"],
+        discord_seeding_in_progress_message=raw_config[
+            "discord_seeding_in_progress_message"
+        ],
+        discord_player_count_message=raw_config["discord_player_count_message"],
+        discord_seeding_player_buckets=raw_config["discord_seeding_player_buckets"],
         dry_run=raw_config["dry_run"],
         poll_time_seeding=raw_config["poll_time_seeding"],
         poll_time_seeded=raw_config["poll_time_seeded"],
@@ -187,6 +192,7 @@ def make_seed_announcement_embed(
     message: str | None,
     current_map: str,
     time_remaining: str,
+    player_count_message: str,
     num_axis_players: int,
     num_allied_players: int,
 ) -> discord.DiscordEmbed | None:
@@ -194,10 +200,14 @@ def make_seed_announcement_embed(
         return
 
     embed = discord.DiscordEmbed(title=message)
+    embed.set_timestamp(datetime.now(tz=timezone.utc))
     embed.add_embed_field(name="Current Map", value=current_map)
     embed.add_embed_field(name="Time Remaining", value=time_remaining)
     embed.add_embed_field(
-        name="Players Per Team", value=f"{num_allied_players} : {num_allied_players}"
+        name="Players Per Team",
+        value=player_count_message.format(
+            num_allied_players=num_allied_players, num_axis_players=num_axis_players
+        ),
     )
 
     return embed

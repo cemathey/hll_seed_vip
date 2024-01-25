@@ -1,5 +1,6 @@
 import urllib.parse
 from datetime import datetime
+from typing import Any
 
 import httpx
 from loguru import logger
@@ -17,6 +18,17 @@ from hll_seed_vip.utils import (
     format_vip_reward_name,
     with_backoff_retry,
 )
+
+
+@with_backoff_retry()
+async def get_public_info(
+    client: httpx.AsyncClient, server_url: str, endpoint="public_info"
+) -> dict[str, Any]:
+    url = f"{server_url}api/{endpoint}"
+    response = await client.get(url=url)
+    raw_response = response.json()["result"]
+
+    return {"current_map_human_name": raw_response["current_map"]["human_name"]}
 
 
 @with_backoff_retry()

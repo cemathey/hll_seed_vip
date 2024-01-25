@@ -31,6 +31,9 @@ class ConfigType(TypedDict):
     base_url: str
     discord_webhook: str
     discord_seeding_complete_message: str
+    discord_seeding_in_progress_message: str
+    discord_player_count_message: str
+    discord_seeding_player_buckets: list[int]
     dry_run: bool
     poll_time_seeding: int
     poll_time_seeded: int
@@ -42,6 +45,9 @@ class ServerConfig(pydantic.BaseModel):
     base_url: str
     discord_webhook: pydantic.HttpUrl | None
     discord_seeding_complete_message: str
+    discord_player_count_message: str
+    discord_seeding_in_progress_message: str
+    discord_seeding_player_buckets: list[int]
     dry_run: bool
 
     poll_time_seeding: int
