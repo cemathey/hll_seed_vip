@@ -13,6 +13,7 @@ from hll_seed_vip.io import (
     get_online_players,
     get_public_info,
     get_vips,
+    message_player,
     reward_players,
 )
 from hll_seed_vip.utils import (
@@ -48,6 +49,8 @@ async def main():
     async with httpx.AsyncClient(
         headers=headers, event_hooks={"response": [raise_on_4xx_5xx]}
     ) as client:
+        newly_seen_steam_ids: set[str] = set()
+        prev_loop_steam_ids: set[str] = set()
         to_add_vip_steam_ids: set[str] | None = set()
         player_name_lookup: dict[str, str] = {}
         prev_announced_player_count: int = 0
@@ -102,6 +105,7 @@ async def main():
                     players_lookup=player_name_lookup,
                 )
 
+                # Post seeding complete message
                 if wh:
                     public_info = await get_public_info(client, config.base_url)
                     embed = make_seed_announcement_embed(
@@ -125,6 +129,28 @@ async def main():
             if is_seeding:
                 sleep_time = config.poll_time_seeding
 
+                # Message players who have connected since last loop
+                if config.message_on_connect:
+                    current_steam_ids = set(
+                        p.steam_id_64 for p in players.players.values()
+                    )
+                    newly_seen_steam_ids = current_steam_ids - prev_loop_steam_ids
+                    prev_loop_steam_ids = current_steam_ids
+
+                    for steam_id in newly_seen_steam_ids:
+                        # TODO: make concurrent
+                        logger.debug(
+                            f"{config.dry_run=} messaging {steam_id}: {config.message_on_connect}"
+                        )
+                        if not config.dry_run:
+                            await message_player(
+                                client=client,
+                                server_url=config.base_url,
+                                steam_id_64=steam_id,
+                                message=config.message_on_connect,
+                            )
+
+                # Announce seeding progres
                 if (
                     wh
                     and config.discord_seeding_player_buckets
