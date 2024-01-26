@@ -12,6 +12,7 @@ from loguru import logger
 
 from hll_seed_vip.models import (
     BaseCondition,
+    ConfigDiscordType,
     ConfigRequirementsType,
     ConfigType,
     ConfigVipRewardType,
@@ -53,16 +54,15 @@ def load_config(path: Path) -> ServerConfig:
 
     requirements = ConfigRequirementsType(**raw_config["requirements"])
     vip_reward = ConfigVipRewardType(**raw_config["vip_reward"])
+    discord = ConfigDiscordType(**raw_config["discord"])
 
     return ServerConfig(
         base_url=raw_config["base_url"],
         discord_webhook=raw_config.get("discord_webhook"),  # type: ignore
-        discord_seeding_complete_message=raw_config["discord_seeding_complete_message"],
-        discord_seeding_in_progress_message=raw_config[
-            "discord_seeding_in_progress_message"
-        ],
-        discord_player_count_message=raw_config["discord_player_count_message"],
-        discord_seeding_player_buckets=raw_config["discord_seeding_player_buckets"],
+        discord_seeding_complete_message=discord["seeding_complete_message"],
+        discord_seeding_in_progress_message=discord["seeding_in_progress_message"],
+        discord_player_count_message=discord["player_count_message"],
+        discord_seeding_player_buckets=discord["seeding_player_buckets"],
         dry_run=raw_config["dry_run"],
         poll_time_seeding=raw_config["poll_time_seeding"],
         poll_time_seeded=raw_config["poll_time_seeded"],

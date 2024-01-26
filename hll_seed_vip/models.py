@@ -27,13 +27,17 @@ class ConfigVipRewardType(TypedDict):
     nice_date: bool
 
 
+class ConfigDiscordType(TypedDict):
+    webhook: str
+    seeding_complete_message: str
+    seeding_in_progress_message: str
+    player_count_message: str
+    seeding_player_buckets: list[int]
+
+
 class ConfigType(TypedDict):
     base_url: str
-    discord_webhook: str
-    discord_seeding_complete_message: str
-    discord_seeding_in_progress_message: str
-    discord_player_count_message: str
-    discord_seeding_player_buckets: list[int]
+    discord: ConfigDiscordType
     dry_run: bool
     poll_time_seeding: int
     poll_time_seeded: int
