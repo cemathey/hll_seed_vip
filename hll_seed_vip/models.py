@@ -22,7 +22,6 @@ class ConfigRequirementsType(TypedDict):
 class ConfigVipRewardType(TypedDict):
     cumulative: bool
     timeframe: ConfigTimeDeltaType
-    player_message: str
     nice_delta: bool
     nice_date: bool
 
@@ -35,9 +34,15 @@ class ConfigDiscordType(TypedDict):
     seeding_player_buckets: list[int]
 
 
+class ConfigPlayerMessageType(TypedDict):
+    reward: str
+    on_connect: str
+
+
 class ConfigType(TypedDict):
     base_url: str
     discord: ConfigDiscordType
+    player_messages: ConfigPlayerMessageType
     dry_run: bool
     poll_time_seeding: int
     poll_time_seeded: int
@@ -67,10 +72,13 @@ class ServerConfig(pydantic.BaseModel):
     minimum_play_time: timedelta
     online_when_seeded: bool
 
+    # player messages
+    message_reward: str
+    message_on_connect: str
+
     # rewards
     cumulative_vip: bool
     vip_reward: timedelta
-    player_message: str
     nice_delta: bool
     nice_date: bool
 

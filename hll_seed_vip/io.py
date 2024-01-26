@@ -152,7 +152,7 @@ async def reward_players(
             from_time=seeded_timestamp,
         )
         msg = format_player_message(
-            config.player_message,
+            config.message_reward,
             vip_reward=config.vip_reward,
             vip_expiration=expiration_date,
             nice_delta=config.nice_delta,
@@ -171,7 +171,7 @@ async def reward_players(
                 expiration_timestamp=expiration_date,
             )
 
-            if config.player_message:
+            if config.message_reward:
                 logger.debug(f"{config.dry_run=} messaging {steam_id_64}: {msg}")
                 await message_player(
                     client,

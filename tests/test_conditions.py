@@ -58,7 +58,8 @@ def make_mock_config(
     online_when_seeded=False,
     cumulative_vip=False,
     vip_reward=timedelta(hours=24),
-    player_message="seed reward message",
+    message_reward="seed reward message",
+    message_on_connect="on connect message",
     nice_delta=True,
     nice_date=True,
 ) -> ServerConfig:
@@ -80,7 +81,8 @@ def make_mock_config(
         online_when_seeded=online_when_seeded,
         cumulative_vip=cumulative_vip,
         vip_reward=vip_reward,
-        player_message=player_message,
+        message_reward=message_reward,
+        message_on_connect=message_on_connect,
         nice_delta=nice_delta,
         nice_date=nice_date,
     )

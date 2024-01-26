@@ -13,6 +13,7 @@ from loguru import logger
 from hll_seed_vip.models import (
     BaseCondition,
     ConfigDiscordType,
+    ConfigPlayerMessageType,
     ConfigRequirementsType,
     ConfigType,
     ConfigVipRewardType,
@@ -55,6 +56,7 @@ def load_config(path: Path) -> ServerConfig:
     requirements = ConfigRequirementsType(**raw_config["requirements"])
     vip_reward = ConfigVipRewardType(**raw_config["vip_reward"])
     discord = ConfigDiscordType(**raw_config["discord"])
+    player_messages = ConfigPlayerMessageType(**raw_config["player_messages"])
 
     return ServerConfig(
         base_url=raw_config["base_url"],
@@ -74,7 +76,8 @@ def load_config(path: Path) -> ServerConfig:
         online_when_seeded=requirements["online_when_seeded"],
         cumulative_vip=vip_reward["cumulative"],
         vip_reward=timedelta(**vip_reward["timeframe"]),
-        player_message=vip_reward["player_message"],
+        message_reward=player_messages["reward"],
+        message_on_connect=player_messages["on_connect"],
         nice_delta=vip_reward["nice_delta"],
         nice_date=vip_reward["nice_date"],
     )
