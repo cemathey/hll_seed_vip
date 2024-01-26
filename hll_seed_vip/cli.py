@@ -53,6 +53,7 @@ async def main():
         prev_announced_player_count: int = 0
         player_buckets = iter(config.discord_seeding_player_buckets)
         next_player_bucket = next(player_buckets)
+        last_bucket_announced = False
         gamestate = await get_gamestate(client, config.base_url)
         is_seeding = not is_seeded(config=config, gamestate=gamestate)
         # if wh:
@@ -90,6 +91,7 @@ async def main():
                 logger.info(f"server seeded at {seeded_timestamp.isoformat()}")
                 current_vips = await get_vips(client, config.base_url)
                 player_buckets = iter(config.discord_seeding_player_buckets)
+                last_bucket_announced = False
 
                 await reward_players(
                     client=client,
@@ -128,9 +130,11 @@ async def main():
                     and config.discord_seeding_player_buckets
                     and total_players > prev_announced_player_count
                     and total_players >= next_player_bucket
+                    and not last_bucket_announced
                 ):
                     prev_announced_player_count = next_player_bucket
                     next_player_bucket = next(player_buckets)
+                    last_bucket_announced = True
 
                     public_info = await get_public_info(client, config.base_url)
                     embed = make_seed_announcement_embed(
