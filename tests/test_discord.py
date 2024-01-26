@@ -20,7 +20,7 @@ def test_make_seed_announcement_embed():
 
     assert e
     assert e.title == msg
-    assert e.footer
+    assert e.timestamp
 
     for field, expected in zip(
         e.fields,
