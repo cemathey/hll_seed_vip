@@ -60,7 +60,7 @@ def load_config(path: Path) -> ServerConfig:
 
     return ServerConfig(
         base_url=raw_config["base_url"],
-        discord_webhook=raw_config.get("discord_webhook"),  # type: ignore
+        discord_webhook=discord["webhook"],
         discord_seeding_complete_message=discord["seeding_complete_message"],
         discord_seeding_in_progress_message=discord["seeding_in_progress_message"],
         discord_player_count_message=discord["player_count_message"],
