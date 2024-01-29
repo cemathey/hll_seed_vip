@@ -49,8 +49,6 @@ async def main():
     async with httpx.AsyncClient(
         headers=headers, event_hooks={"response": [raise_on_4xx_5xx]}
     ) as client:
-        newly_seen_steam_ids: set[str] = set()
-        prev_loop_steam_ids: set[str] = set()
         to_add_vip_steam_ids: set[str] | None = set()
         player_name_lookup: dict[str, str] = {}
         prev_announced_player_count: int = 0
@@ -93,8 +91,6 @@ async def main():
                 seeded_timestamp = datetime.now(tz=timezone.utc)
                 logger.info(f"server seeded at {seeded_timestamp.isoformat()}")
                 current_vips = await get_vips(client, config.base_url)
-                player_buckets = iter(config.discord_seeding_player_buckets)
-                last_bucket_announced = False
 
                 await reward_players(
                     client=client,
@@ -108,6 +104,9 @@ async def main():
                 # Post seeding complete message
                 if wh:
                     public_info = await get_public_info(client, config.base_url)
+                    logger.debug(
+                        f"Making embed for `{config.discord_seeding_complete_message}`"
+                    )
                     embed = make_seed_announcement_embed(
                         message=config.discord_seeding_complete_message,
                         current_map=public_info["current_map_human_name"],
@@ -120,6 +119,10 @@ async def main():
                         wh.add_embed(embed)
                         wh.execute(remove_embeds=True)
 
+                # Reset for next seed
+                player_buckets = iter(config.discord_seeding_player_buckets)
+                last_bucket_announced = False
+                prev_announced_player_count: int = 0
                 to_add_vip_steam_ids.clear()
                 is_seeding = False
             elif not is_seeding and not is_seeded(config=config, gamestate=gamestate):
@@ -129,28 +132,10 @@ async def main():
             if is_seeding:
                 sleep_time = config.poll_time_seeding
 
-                # Message players who have connected since last loop
-                if config.message_on_connect:
-                    current_steam_ids = set(
-                        p.steam_id_64 for p in players.players.values()
-                    )
-                    newly_seen_steam_ids = current_steam_ids - prev_loop_steam_ids
-                    prev_loop_steam_ids = current_steam_ids
-
-                    for steam_id in newly_seen_steam_ids:
-                        # TODO: make concurrent
-                        logger.debug(
-                            f"{config.dry_run=} messaging {steam_id}: {config.message_on_connect}"
-                        )
-                        if not config.dry_run:
-                            await message_player(
-                                client=client,
-                                server_url=config.base_url,
-                                steam_id_64=steam_id,
-                                message=config.message_on_connect,
-                            )
-
                 # Announce seeding progres
+                logger.debug(
+                    f"{wh=} {config.discord_seeding_player_buckets=} {total_players=} {prev_announced_player_count=} {next_player_bucket=} {last_bucket_announced=}"
+                )
                 if (
                     wh
                     and config.discord_seeding_player_buckets
@@ -158,9 +143,11 @@ async def main():
                     and total_players >= next_player_bucket
                     and not last_bucket_announced
                 ):
+                    if next_player_bucket == config.discord_seeding_player_buckets[-1]:
+                        last_bucket_announced = True
+
                     prev_announced_player_count = next_player_bucket
                     next_player_bucket = next(player_buckets)
-                    last_bucket_announced = True
 
                     public_info = await get_public_info(client, config.base_url)
                     embed = make_seed_announcement_embed(
