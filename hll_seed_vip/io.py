@@ -22,9 +22,9 @@ from hll_seed_vip.utils import (
 
 @with_backoff_retry()
 async def get_public_info(
-    client: httpx.AsyncClient, server_url: str, endpoint="public_info"
+    client: httpx.AsyncClient, server_url: str, endpoint="api/public_info"
 ) -> dict[str, Any]:
-    url = f"{server_url}api/{endpoint}"
+    url = urllib.parse.urljoin(server_url, endpoint)
     response = await client.get(url=url)
     raw_response = response.json()["result"]
 
@@ -35,9 +35,9 @@ async def get_public_info(
 async def get_vips(
     client: httpx.AsyncClient,
     server_url: str,
-    endpoint="get_vip_ids",
+    endpoint="api/get_vip_ids",
 ) -> dict[str, VipPlayer]:
-    url = f"{server_url}api/{endpoint}"
+    url = urllib.parse.urljoin(server_url, endpoint)
     response = await client.get(url=url)
 
     raw_vips = response.json()["result"]
@@ -58,9 +58,9 @@ async def get_vips(
 async def get_gamestate(
     client: httpx.AsyncClient,
     server_url: str,
-    endpoint="get_gamestate",
+    endpoint="api/get_gamestate",
 ) -> GameState:
-    url = f"{server_url}api/{endpoint}"
+    url = urllib.parse.urljoin(server_url, endpoint)
     response = await client.get(url=url)
     result = response.json()["result"]
 
@@ -76,9 +76,9 @@ async def get_gamestate(
 async def get_online_players(
     client: httpx.AsyncClient,
     server_url: str,
-    endpoint="get_players",
+    endpoint="api/get_players",
 ) -> ServerPopulation:
-    url = f"{server_url}api/{endpoint}"
+    url = urllib.parse.urljoin(server_url, endpoint)
     response = await client.get(url=url)
     result = response.json()["result"]
     players = {}
@@ -103,14 +103,16 @@ async def add_vip(
     steam_id_64: str,
     player_name: str,
     expiration_timestamp: datetime | None,
-    endpoint="do_add_vip",
+    endpoint="api/do_add_vip",
 ):
-    url = f"{server_url}api/{endpoint}"
+    url = urllib.parse.urljoin(server_url, endpoint)
+
     body = {
         "steam_id_64": steam_id_64,
         "name": player_name,
         "expiration": expiration_timestamp,
     }
+    logger.debug(f"add_vip {url=} {body=}")
     response = await client.post(url=url, data=body)
     result = response.json()["result"]
     logger.info(
@@ -159,15 +161,21 @@ async def reward_players(
             nice_date=config.nice_date,
         )
         if not config.dry_run:
+            vip_name = (
+                player.player.name
+                if player
+                else format_vip_reward_name(
+                    players_lookup.get(steam_id_64, "No player name found")
+                )
+            )
+            logger.debug(
+                f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {vip_name=} {expiration_date=}",
+            )
             await add_vip(
                 client=client,
                 server_url=config.base_url,
                 steam_id_64=steam_id_64,
-                player_name=player.player.name
-                if player
-                else format_vip_reward_name(
-                    players_lookup.get(steam_id_64, "No player name found")
-                ),
+                player_name=vip_name,
                 expiration_timestamp=expiration_date,
             )
 
