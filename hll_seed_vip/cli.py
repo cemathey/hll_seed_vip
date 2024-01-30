@@ -125,7 +125,11 @@ async def main():
                 prev_announced_player_count: int = 0
                 to_add_vip_steam_ids.clear()
                 is_seeding = False
-            elif not is_seeding and not is_seeded(config=config, gamestate=gamestate):
+            elif (
+                not is_seeding
+                and not is_seeded(config=config, gamestate=gamestate)
+                and total_players > 0
+            ):
                 logger.debug(f"not is_seeding and not is_seeded")
                 is_seeding = True
 
