@@ -1,3 +1,4 @@
+import inspect
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from pathlib import Path
@@ -31,7 +32,11 @@ def with_backoff_retry():
     def decorator(func):
         @wraps(func)
         async def wrapped(*args, **kwargs):
-            server_url: str = args[1]
+            # Helpfully sourced (with updates) from
+            # https://stackoverflow.com/questions/218616/how-to-get-method-parameter-names
+            args_name = inspect.getfullargspec(func)[0]
+            args_dict = dict(zip(args_name, args))
+            server_url: str = args_dict.get("server_url", None)
             for idx, backoff in enumerate(backoffs):
                 try:
                     return await func(*args, **kwargs)
