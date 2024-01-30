@@ -36,7 +36,6 @@ class ConfigDiscordType(TypedDict):
 
 class ConfigPlayerMessageType(TypedDict):
     reward: str
-    on_connect: str
 
 
 class ConfigType(TypedDict):
@@ -74,7 +73,6 @@ class ServerConfig(pydantic.BaseModel):
 
     # player messages
     message_reward: str
-    message_on_connect: str
 
     # rewards
     cumulative_vip: bool

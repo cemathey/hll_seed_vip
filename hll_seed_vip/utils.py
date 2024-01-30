@@ -82,7 +82,6 @@ def load_config(path: Path) -> ServerConfig:
         cumulative_vip=vip_reward["cumulative"],
         vip_reward=timedelta(**vip_reward["timeframe"]),
         message_reward=player_messages["reward"],
-        message_on_connect=player_messages["on_connect"],
         nice_delta=vip_reward["nice_delta"],
         nice_date=vip_reward["nice_date"],
     )

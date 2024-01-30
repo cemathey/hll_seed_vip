@@ -12,7 +12,6 @@ discord:
 poll_time_seeding: 30
 poll_time_seeded: 300
 player_messages:
-  on_connect: "Thank your helping us seed, if you stay online until we're seeded > 20v20 players, you'll be granted 24 hours of VIP"
   reward: "Thank you for helping us seed.\n\nYou've been granted {vip_reward}\n\nYour VIP currently expires: {vip_expiration}"
 requirements:
   min_allies: 0
