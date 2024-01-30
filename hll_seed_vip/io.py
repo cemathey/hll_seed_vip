@@ -110,10 +110,12 @@ async def add_vip(
     body = {
         "steam_id_64": steam_id_64,
         "name": player_name,
-        "expiration": expiration_timestamp,
+        "expiration": expiration_timestamp.isoformat()
+        if expiration_timestamp
+        else None,
     }
     logger.debug(f"add_vip {url=} {body=}")
-    response = await client.post(url=url, data=body)
+    response = await client.post(url=url, json=body)
     result = response.json()["result"]
     logger.info(
         f"added VIP for {steam_id_64=} {expiration_timestamp=} {player_name=} {result=}",
@@ -130,7 +132,7 @@ async def message_player(
 ):
     url = urllib.parse.urljoin(server_url, endpoint)
     body = {"steam_id_64": steam_id_64, "message": message}
-    response = await client.post(url=url, data=body)
+    response = await client.post(url=url, json=body)
     logger.info(f"messaged player {steam_id_64}: {message}")
 
 
