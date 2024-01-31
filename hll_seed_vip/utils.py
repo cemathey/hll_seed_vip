@@ -1,6 +1,7 @@
 import inspect
 from datetime import datetime, timedelta, timezone
 from functools import wraps
+from itertools import cycle
 from pathlib import Path
 from typing import Iterable
 
@@ -27,7 +28,7 @@ from hll_seed_vip.models import (
 
 
 def with_backoff_retry():
-    backoffs = (0, 1, 1.5, 2, 4, 8)
+    backoffs = (0, 1, 1.5, 2, 4, 8, 16)
 
     def decorator(func):
         @wraps(func)
@@ -37,13 +38,13 @@ def with_backoff_retry():
             args_name = inspect.getfullargspec(func)[0]
             args_dict = dict(zip(args_name, args))
             server_url: str = args_dict.get("server_url", None)
-            for idx, backoff in enumerate(backoffs):
+            for idx, backoff in enumerate(cycle(backoffs)):
                 try:
                     return await func(*args, **kwargs)
                 except httpx.HTTPError as e:
                     logger.error(e)
                     logger.warning(
-                        f"Retrying attempt {idx+1}/{len(backoffs)+1}, sleeping for {backoff} seconds for {server_url} function={func.__name__}"
+                        f"Retrying attempt {idx+1}, sleeping for {backoff} seconds for {server_url} function={func.__name__}"
                     )
                     await trio.sleep(backoff)
                     continue
