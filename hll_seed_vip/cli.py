@@ -187,6 +187,6 @@ if __name__ == "__main__":
     os.makedirs(LOG_DIR, exist_ok=True)
     os.makedirs(CONFIG_DIR, exist_ok=True)
     logger.add(
-        Path(LOG_DIR).joinpath(LOG_FILE_NAME), level=os.getenv("LOGURU_LEVEL", "DEBUG")
+        Path(LOG_DIR).joinpath(LOG_FILE_NAME), level=os.getenv("LOG_LEVEL", "DEBUG")
     )
     trio.run(main)
