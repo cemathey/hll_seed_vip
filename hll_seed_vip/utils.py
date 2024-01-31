@@ -80,6 +80,7 @@ def load_config(path: Path) -> ServerConfig:
         max_axis=requirements["max_axis"],
         minimum_play_time=timedelta(**requirements["minimum_play_time"]),
         online_when_seeded=requirements["online_when_seeded"],
+        player_name_not_current_vip=vip_reward["player_name_not_current_vip"],
         cumulative_vip=vip_reward["cumulative"],
         vip_reward=timedelta(**vip_reward["timeframe"]),
         message_reward=player_messages["reward"],
@@ -221,8 +222,8 @@ def make_seed_announcement_embed(
     return embed
 
 
-def format_vip_reward_name(player_name: str):
-    return f"{player_name} - HLL Seed VIP"
+def format_vip_reward_name(player_name: str, format_str):
+    return format_str.format(player_name=player_name)
 
 
 def should_announce_seeding_progress(

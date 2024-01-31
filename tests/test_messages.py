@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 import pytest
 from freezegun import freeze_time
 
-from hll_seed_vip.utils import format_player_message
+from hll_seed_vip.utils import format_player_message, format_vip_reward_name
 
 with freeze_time("2024-01-31"):
     NOW = datetime.now()
@@ -70,3 +70,11 @@ def test_format_player_message(
         )
         == expected
     )
+
+
+@pytest.mark.parametrize(
+    "name, format_str, expected",
+    [("some_dude", "{player_name} - HLL Seed VIP", "some_dude - HLL Seed VIP")],
+)
+def test_format_vip_reward_name(name, format_str, expected):
+    assert format_vip_reward_name(player_name=name, format_str=format_str) == expected

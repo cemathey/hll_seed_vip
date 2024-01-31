@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from hll_seed_vip.utils import make_seed_announcement_embed
 
 

@@ -20,6 +20,7 @@ class ConfigRequirementsType(TypedDict):
 
 
 class ConfigVipRewardType(TypedDict):
+    player_name_not_current_vip: str
     cumulative: bool
     timeframe: ConfigTimeDeltaType
     nice_time_delta: bool
@@ -75,6 +76,7 @@ class ServerConfig(pydantic.BaseModel):
     message_reward: str
 
     # rewards
+    player_name_not_current_vip: str
     cumulative_vip: bool
     vip_reward: timedelta
     nice_time_delta: bool

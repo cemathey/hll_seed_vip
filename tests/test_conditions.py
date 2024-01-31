@@ -45,7 +45,6 @@ def make_mock_server_pop(players: dict[str, Player] | None = None):
 
 
 def make_mock_config(
-    name="No server name",
     url="http://example.com",
     dry_run=True,
     poll_time_seeded=60,
@@ -55,11 +54,11 @@ def make_mock_config(
     max_allies=20,
     max_axis=20,
     minimum_time=timedelta(minutes=5),
+    player_name_not_current_vip="{player_name} - HLL Seed VIP",
     online_when_seeded=False,
     cumulative_vip=False,
     vip_reward=timedelta(hours=24),
     message_reward="seed reward message",
-    message_on_connect="on connect message",
     nice_time_delta=True,
     nice_expiration_date=True,
 ) -> ServerConfig:
@@ -78,6 +77,7 @@ def make_mock_config(
         max_allies=max_allies,
         max_axis=max_axis,
         minimum_play_time=minimum_time,
+        player_name_not_current_vip=player_name_not_current_vip,
         online_when_seeded=online_when_seeded,
         cumulative_vip=cumulative_vip,
         vip_reward=vip_reward,

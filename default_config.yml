@@ -50,6 +50,10 @@ requirements:
     minutes: 5
     hours: 0
 vip_reward:
+  # The name used to add VIP in CRCON if the player isn't currently a VIP
+  # If the player is a current VIP their existing VIP name is used
+  # {player_name} is their current in game player name
+  player_name_not_current_vip: "{player_name} - HLL Seed VIP"
   # If set to true (recommended) it will add their earned VIP time in CRCON
   # If set to false it will overwrite their CRCON expiration date with the new expiration
   cumulative: true

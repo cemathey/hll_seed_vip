@@ -166,7 +166,8 @@ async def reward_players(
             player.player.name
             if player
             else format_vip_reward_name(
-                players_lookup.get(steam_id_64, "No player name found")
+                players_lookup.get(steam_id_64, "No player name found"),
+                format_str=config.player_name_not_current_vip,
             )
         )
         if not config.dry_run:
