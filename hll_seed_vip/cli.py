@@ -186,7 +186,11 @@ async def main():
 if __name__ == "__main__":
     os.makedirs(LOG_DIR, exist_ok=True)
     os.makedirs(CONFIG_DIR, exist_ok=True)
+    # TODO: expose log retention/rotation as configurable options
     logger.add(
-        Path(LOG_DIR).joinpath(LOG_FILE_NAME), level=os.getenv("LOG_LEVEL", "DEBUG")
+        Path(LOG_DIR).joinpath(LOG_FILE_NAME),
+        level=os.getenv("LOG_LEVEL", "DEBUG"),
+        rotation="10 MB",
+        retention="10 days",
     )
     trio.run(main)
