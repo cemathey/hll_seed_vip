@@ -27,7 +27,7 @@ class ConfigVipRewardType(TypedDict):
 
 
 class ConfigDiscordType(TypedDict):
-    webhook: str
+    webhooks: list[pydantic.HttpUrl]
     seeding_complete_message: str
     seeding_in_progress_message: str
     player_count_message: str
@@ -51,7 +51,7 @@ class ConfigType(TypedDict):
 
 class ServerConfig(pydantic.BaseModel):
     base_url: str
-    discord_webhook: pydantic.HttpUrl | None
+    discord_webhooks: list[pydantic.HttpUrl] = pydantic.Field(default_factory=list)
     discord_seeding_complete_message: str
     discord_player_count_message: str
     discord_seeding_in_progress_message: str

@@ -44,9 +44,9 @@ async def main():
 
     config = load_config(Path(CONFIG_DIR).joinpath(CONFIG_FILE_NAME))
 
-    wh: discord.DiscordWebhook | None = None
-    if config.discord_webhook:
-        wh = discord.DiscordWebhook(url=str(config.discord_webhook))
+    whs: list[discord.DiscordWebhook] = []
+    if config.discord_webhooks:
+        whs = [discord.DiscordWebhook(url=str(url)) for url in config.discord_webhooks]
 
     async with httpx.AsyncClient(
         headers=headers, event_hooks={"response": [raise_on_4xx_5xx]}
@@ -96,7 +96,7 @@ async def main():
                     )
 
                     # Post seeding complete message
-                    if wh:
+                    if whs:
                         public_info = await get_public_info(client, config.base_url)
                         logger.debug(
                             f"Making embed for `{config.discord_seeding_complete_message}`"
@@ -110,8 +110,9 @@ async def main():
                             num_axis_players=gamestate.num_axis_players,
                         )
                         if embed:
-                            wh.add_embed(embed)
-                            wh.execute(remove_embeds=True)
+                            for wh in whs:
+                                wh.add_embed(embed)
+                                wh.execute(remove_embeds=True)
 
                     # Reset for next seed
                     last_bucket_announced = False
@@ -131,9 +132,9 @@ async def main():
 
                     # Announce seeding progres
                     logger.debug(
-                        f"{wh=} {config.discord_seeding_player_buckets=} {total_players=} {prev_announced_bucket=} {next_player_bucket=} {last_bucket_announced=}"
+                        f"whs={[wh.url for wh in whs]} {config.discord_seeding_player_buckets=} {total_players=} {prev_announced_bucket=} {next_player_bucket=} {last_bucket_announced=}"
                     )
-                    if wh and should_announce_seeding_progress(
+                    if whs and should_announce_seeding_progress(
                         player_buckets=config.discord_seeding_player_buckets,
                         total_players=total_players,
                         prev_announced_bucket=prev_announced_bucket,
@@ -169,8 +170,9 @@ async def main():
                             num_axis_players=gamestate.num_axis_players,
                         )
                         if embed:
-                            wh.add_embed(embed)
-                            wh.execute(remove_embeds=True)
+                            for wh in whs:
+                                wh.add_embed(embed)
+                                wh.execute(remove_embeds=True)
 
                 else:
                     sleep_time = config.poll_time_seeded

@@ -65,7 +65,7 @@ def make_mock_config(
 ) -> ServerConfig:
     return ServerConfig(
         base_url=str(HttpUrl(url=url)),  # type: ignore
-        discord_webhook=None,
+        discord_webhooks=[],
         discord_seeding_complete_message="Server is live",
         discord_seeding_in_progress_message="Server has reached {player_count} players",
         discord_player_count_message="{num_allied_players} - {num_axis_players}",

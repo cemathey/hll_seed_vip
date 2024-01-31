@@ -5,8 +5,11 @@ dry_run: true
 # ex: http://127.0.0.1:8010/
 base_url: ""
 discord:
-  # A discord webhook if you want to use Discord integrations
-  webhook: ""
+  # A list of discord webhooks if you want to use Discord integrations
+  # Set to a blank list to disable
+  # ex: webhooks: []
+  # or a valid YAML sequence of URLs https://learnxinyminutes.com/docs/yaml/
+  webhooks: []
   # {player_count} will display the total number of servers on the player and can be used
   # in both the seeding_in_progress_message and seeding_complete_message
   seeding_in_progress_message: "Server has reached {player_count} players"
