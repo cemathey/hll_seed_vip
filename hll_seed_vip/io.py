@@ -146,8 +146,8 @@ async def reward_players(
 ):
     # TODO: make concurrent
     logger.debug(f"Rewarding players with VIP {config.dry_run=}")
-    logger.debug(f"{to_add_vip_steam_ids=}")
-    logger.debug(f"{current_vips=}")
+    logger.debug(f"Total={len(to_add_vip_steam_ids)} {to_add_vip_steam_ids=}")
+    logger.debug(f"Total={len(current_vips)=} {current_vips=}")
     for steam_id_64 in to_add_vip_steam_ids:
         player = current_vips.get(steam_id_64)
         expiration_date = calc_vip_expiration_timestamp(
@@ -162,14 +162,14 @@ async def reward_players(
             nice_delta=config.nice_delta,
             nice_date=config.nice_date,
         )
-        if not config.dry_run:
-            vip_name = (
-                player.player.name
-                if player
-                else format_vip_reward_name(
-                    players_lookup.get(steam_id_64, "No player name found")
-                )
+        vip_name = (
+            player.player.name
+            if player
+            else format_vip_reward_name(
+                players_lookup.get(steam_id_64, "No player name found")
             )
+        )
+        if not config.dry_run:
             logger.debug(
                 f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {vip_name=} {expiration_date=}",
             )
@@ -192,6 +192,6 @@ async def reward_players(
 
         else:
             logger.debug(
-                f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {expiration_date=}",
+                f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {vip_name=} {expiration_date=}",
             )
             logger.debug(f"{config.dry_run=} messaging {steam_id_64}: {msg}")

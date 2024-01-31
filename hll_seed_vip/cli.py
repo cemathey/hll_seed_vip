@@ -114,7 +114,6 @@ async def main():
                             wh.execute(remove_embeds=True)
 
                     # Reset for next seed
-                    # player_buckets = iter(config.discord_seeding_player_buckets)
                     last_bucket_announced = False
                     prev_announced_bucket = 0
                     to_add_vip_steam_ids.clear()
