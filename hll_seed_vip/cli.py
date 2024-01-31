@@ -83,7 +83,7 @@ async def main():
                 # Server seeded
                 if is_seeding and is_seeded(config=config, gamestate=gamestate):
                     seeded_timestamp = datetime.now(tz=timezone.utc)
-                    logger.info(f"server seeded at {seeded_timestamp.isoformat()}")
+                    logger.info(f"Server seeded at {seeded_timestamp.isoformat()}")
                     current_vips = await get_vips(client, config.base_url)
 
                     await reward_players(

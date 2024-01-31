@@ -145,8 +145,8 @@ async def reward_players(
     players_lookup: dict[str, str],
 ):
     # TODO: make concurrent
-    logger.debug(f"Rewarding players with VIP {config.dry_run=}")
-    logger.debug(f"Total={len(to_add_vip_steam_ids)} {to_add_vip_steam_ids=}")
+    logger.info(f"Rewarding players with VIP {config.dry_run=}")
+    logger.info(f"Total={len(to_add_vip_steam_ids)} {to_add_vip_steam_ids=}")
     logger.debug(f"Total={len(current_vips)=} {current_vips=}")
     for steam_id_64 in to_add_vip_steam_ids:
         player = current_vips.get(steam_id_64)
@@ -170,7 +170,7 @@ async def reward_players(
             )
         )
         if not config.dry_run:
-            logger.debug(
+            logger.info(
                 f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {vip_name=} {expiration_date=}",
             )
             await add_vip(
@@ -182,7 +182,7 @@ async def reward_players(
             )
 
             if config.message_reward:
-                logger.debug(f"{config.dry_run=} messaging {steam_id_64}: {msg}")
+                logger.info(f"{config.dry_run=} messaging {steam_id_64}: {msg}")
                 await message_player(
                     client,
                     server_url=config.base_url,
@@ -191,7 +191,7 @@ async def reward_players(
                 )
 
         else:
-            logger.debug(
+            logger.info(
                 f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {vip_name=} {expiration_date=}",
             )
-            logger.debug(f"{config.dry_run=} messaging {steam_id_64}: {msg}")
+            logger.info(f"{config.dry_run=} messaging {steam_id_64}: {msg}")
