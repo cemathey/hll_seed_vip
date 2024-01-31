@@ -159,8 +159,8 @@ async def reward_players(
             config.message_reward,
             vip_reward=config.vip_reward,
             vip_expiration=expiration_date,
-            nice_delta=config.nice_delta,
-            nice_date=config.nice_date,
+            nice_time_delta=config.nice_time_delta,
+            nice_expiration_date=config.nice_expiration_date,
         )
         vip_name = (
             player.player.name

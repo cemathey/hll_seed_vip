@@ -1,34 +1,67 @@
+# set to true if you want to test, it will not actually add VIP or message players but will log as if it was
 dry_run: true
+# The URL of your CRCON
+# ex: http://example.com or https://example.com
+# ex: http://127.0.0.1:8010/
 base_url: ""
 discord:
+  # A discord webhook if you want to use Discord integrations
   webhook: ""
-  seeding_complete_message: "Server is live!"
+  # {player_count} will display the total number of servers on the player and can be used
+  # in both the seeding_in_progress_message and seeding_complete_message
   seeding_in_progress_message: "Server has reached {player_count} players"
+  seeding_complete_message: "Server is live!"
   player_count_message: "{num_allied_players} - {num_axis_players}"
+  # A list of player counts to announce when the total players reachers it
+  # Set to a blank list to disable
+  # ex: seeding_player_buckets: []
   seeding_player_buckets:
     - 10
     - 20
     - 30
+# How long to sleep between loops when seeding, no matter how low it's set it can't
+# run any faster than the amount of time it takes to make all the network requests
+# and process the data
 poll_time_seeding: 30
+# How long to sleep between loops when the server is seeded, no matter how low it's set it can't
+# run any faster than the amount of time it takes to make all the network requests
+# and process the data
 poll_time_seeded: 300
 player_messages:
+  # The message sent to a player after the server has seeded
+  # you can use {vip_reward} and {vip_expiration} as variables, neither or both
+  # {vip_reward} is the amount of time added to their VIP expiration time in CRCN
+  # {vip_expiration} is when the players VIP will expire in CRCON
   reward: "Thank you for helping us seed.\n\nYou've been granted {vip_reward}\n\nYour VIP currently expires: {vip_expiration}"
 requirements:
+  # The min/max players per team the server needs to have to count as 'seeding'
   min_allies: 0
   min_axis: 0
   max_allies: 20
   max_axis: 20
+  # Whether the player needs to be online when the seed finishes to be rewarded
   online_when_seeded: true
+  # The minimum amount of time a player needs to join before the seed finishes to be rewarded (it is the sum of all the categories)
   minimum_play_time:
     seconds: 0
     minutes: 5
     hours: 0
 vip_reward:
+  # If set to true (recommended) it will add their earned VIP time in CRCON
+  # If set to false it will overwrite their CRCON expiration date with the new expiration
   cumulative: true
+  # How long the player earns VIP for helping seed (it is the sum of all the categories)
   timeframe:
     minutes: 0
     hours: 0
     days: 1
     weeks: 0
-  nice_delta: yes
-  nice_date: yes
+
+  # If set to true (recommended) it will use https://humanize.readthedocs.io/en/stable/
+  # and format VIP rewards nicely (i.e. `24 hours`)
+  # If set to false it will use Pythons built in formatting, (i.e. 25 hours would show as `1 day, 1:00:00`)
+  nice_time_delta: yes
+  # If set to true (recommended) it will use https://humanize.readthedocs.io/en/stable/
+  # and format dates nicely (i.e. `10 months from now`)
+  # If set to false it will use ISO dates (i.e.  `2024-01-31T17:19:50.947186+00:00`)
+  nice_expiration_date: yes

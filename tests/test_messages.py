@@ -1,12 +1,21 @@
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
+from freezegun import freeze_time
 
 from hll_seed_vip.utils import format_player_message
 
+with freeze_time("2024-01-31"):
+    NOW = datetime.now()
+    NOW_UTC = datetime.now(tz=timezone.utc)
+    NOW_UTC_PLUS_01_00 = datetime.now(tz=timezone(offset=timedelta(hours=1)))
+    TODAY = date.today()
+    TOMORROW = TODAY + timedelta(days=1)
+    YESTERDAY = TODAY - timedelta(days=1)
+
 
 @pytest.mark.parametrize(
-    "msg, vip_reward, vip_expiration, nice_delta, nice_date, expected",
+    "msg, vip_reward, vip_expiration, nice_time_delta, nice_expiration_date, expected",
     [
         ("seed", timedelta(hours=12), datetime.utcnow(), False, False, "seed"),
         (
@@ -23,20 +32,41 @@ from hll_seed_vip.utils import format_player_message
             datetime(year=2024, month=12, day=1, hour=13, tzinfo=timezone.utc),
             True,
             True,
-            "Thank you for helping us seed, your VIP expires 10 months from now",
+            "Thank you for helping us seed, your VIP expires 9 months from now",
+        ),
+        (
+            "Thank you for helping us seed, you earned {vip_reward} of VIP and your VIP expires {vip_expiration}",
+            timedelta(hours=12),
+            datetime(year=2024, month=12, day=1, hour=13, tzinfo=timezone.utc),
+            True,
+            True,
+            "Thank you for helping us seed, you earned 12 hours of VIP and your VIP expires 9 months from now",
+        ),
+        (
+            "Thank you for helping us seed!",
+            timedelta(hours=12),
+            datetime(year=2024, month=12, day=1, hour=13, tzinfo=timezone.utc),
+            True,
+            True,
+            "Thank you for helping us seed!",
         ),
     ],
 )
 def test_format_player_message(
-    msg, vip_reward, vip_expiration, nice_delta, nice_date, expected
+    msg: str,
+    vip_reward: timedelta,
+    vip_expiration: datetime,
+    nice_time_delta: bool,
+    nice_expiration_date: bool,
+    expected: str,
 ):
     assert (
         format_player_message(
             message=msg,
             vip_reward=vip_reward,
             vip_expiration=vip_expiration,
-            nice_delta=nice_delta,
-            nice_date=nice_date,
+            nice_time_delta=nice_time_delta,
+            nice_expiration_date=nice_expiration_date,
         )
         == expected
     )

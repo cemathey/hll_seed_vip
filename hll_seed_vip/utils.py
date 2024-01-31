@@ -83,8 +83,8 @@ def load_config(path: Path) -> ServerConfig:
         cumulative_vip=vip_reward["cumulative"],
         vip_reward=timedelta(**vip_reward["timeframe"]),
         message_reward=player_messages["reward"],
-        nice_delta=vip_reward["nice_delta"],
-        nice_date=vip_reward["nice_date"],
+        nice_time_delta=vip_reward["nice_time_delta"],
+        nice_expiration_date=vip_reward["nice_expiration_date"],
     )
 
 
@@ -180,15 +180,15 @@ def format_player_message(
     message: str,
     vip_reward: timedelta,
     vip_expiration: datetime,
-    nice_delta: bool = True,
-    nice_date: bool = True,
+    nice_time_delta: bool = True,
+    nice_expiration_date: bool = True,
 ) -> str:
-    if nice_delta:
+    if nice_time_delta:
         delta = naturaldelta(vip_reward)
     else:
         delta = vip_reward
 
-    if nice_date:
+    if nice_expiration_date:
         date = naturaltime(vip_expiration)
     else:
         date = vip_expiration.isoformat()

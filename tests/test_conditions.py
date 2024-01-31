@@ -60,8 +60,8 @@ def make_mock_config(
     vip_reward=timedelta(hours=24),
     message_reward="seed reward message",
     message_on_connect="on connect message",
-    nice_delta=True,
-    nice_date=True,
+    nice_time_delta=True,
+    nice_expiration_date=True,
 ) -> ServerConfig:
     return ServerConfig(
         base_url=str(HttpUrl(url=url)),  # type: ignore
@@ -82,9 +82,8 @@ def make_mock_config(
         cumulative_vip=cumulative_vip,
         vip_reward=vip_reward,
         message_reward=message_reward,
-        message_on_connect=message_on_connect,
-        nice_delta=nice_delta,
-        nice_date=nice_date,
+        nice_time_delta=nice_time_delta,
+        nice_expiration_date=nice_expiration_date,
     )
 
 
