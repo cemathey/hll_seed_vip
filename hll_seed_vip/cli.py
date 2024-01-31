@@ -177,8 +177,9 @@ async def main():
 
                 logger.info(f"sleeping {sleep_time=}")
                 await trio.sleep(sleep_time)
-        except Exception as e:
-            logger.exception(e)
+        except* Exception as eg:
+            for e in eg.exceptions:
+                logger.exception(e)
             raise
 
 
