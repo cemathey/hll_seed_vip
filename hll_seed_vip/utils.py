@@ -222,3 +222,18 @@ def make_seed_announcement_embed(
 
 def format_vip_reward_name(player_name: str):
     return f"{player_name} - HLL Seed VIP"
+
+
+def should_announce_seeding_progress(
+    player_buckets: list[int],
+    total_players: int,
+    prev_announced_bucket: int,
+    next_player_bucket: int,
+    last_bucket_announced: bool,
+) -> bool:
+    return (
+        len(player_buckets) > 0
+        and total_players > prev_announced_bucket
+        and total_players >= next_player_bucket
+        and not last_bucket_announced
+    )

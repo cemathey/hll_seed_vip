@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timezone
+from itertools import cycle
 from pathlib import Path
 
 import discord_webhook as discord
@@ -21,6 +22,7 @@ from hll_seed_vip.utils import (
     is_seeded,
     load_config,
     make_seed_announcement_embed,
+    should_announce_seeding_progress,
 )
 
 CONFIG_FILE_NAME = os.getenv("CONFIG_FILE_NAME", "config.yml")
@@ -51,24 +53,12 @@ async def main():
     ) as client:
         to_add_vip_steam_ids: set[str] | None = set()
         player_name_lookup: dict[str, str] = {}
-        prev_announced_player_count: int = 0
-        player_buckets = iter(config.discord_seeding_player_buckets)
+        prev_announced_bucket: int = 0
+        player_buckets = cycle(config.discord_seeding_player_buckets)
         next_player_bucket = next(player_buckets)
         last_bucket_announced = False
         gamestate = await get_gamestate(client, config.base_url)
         is_seeding = not is_seeded(config=config, gamestate=gamestate)
-        # if wh:
-        #     embed = make_seed_announcement_embed(
-        #         message=config.discord_seeding_complete_message,
-        #         current_map=gamestate.current_map,
-        #         time_remaining=gamestate.raw_time_remaining,
-        #         player_count_message=config.discord_player_count_message,
-        #         num_allied_players=gamestate.num_allied_players,
-        #         num_axis_players=gamestate.num_axis_players,
-        #     )
-        #     if embed:
-        #         wh.add_embed(embed)
-        #         wh.execute(remove_embeds=True)
         try:
             while True:
                 players = await get_online_players(client, config.base_url)
@@ -90,6 +80,7 @@ async def main():
                     cum_steam_ids=to_add_vip_steam_ids,
                 )
 
+                # Server seeded
                 if is_seeding and is_seeded(config=config, gamestate=gamestate):
                     seeded_timestamp = datetime.now(tz=timezone.utc)
                     logger.info(f"server seeded at {seeded_timestamp.isoformat()}")
@@ -123,9 +114,9 @@ async def main():
                             wh.execute(remove_embeds=True)
 
                     # Reset for next seed
-                    player_buckets = iter(config.discord_seeding_player_buckets)
+                    # player_buckets = iter(config.discord_seeding_player_buckets)
                     last_bucket_announced = False
-                    prev_announced_player_count: int = 0
+                    prev_announced_bucket = 0
                     to_add_vip_steam_ids.clear()
                     is_seeding = False
                 elif (
@@ -141,23 +132,31 @@ async def main():
 
                     # Announce seeding progres
                     logger.debug(
-                        f"{wh=} {config.discord_seeding_player_buckets=} {total_players=} {prev_announced_player_count=} {next_player_bucket=} {last_bucket_announced=}"
+                        f"{wh=} {config.discord_seeding_player_buckets=} {total_players=} {prev_announced_bucket=} {next_player_bucket=} {last_bucket_announced=}"
                     )
-                    if (
-                        wh
-                        and config.discord_seeding_player_buckets
-                        and total_players > prev_announced_player_count
-                        and total_players >= next_player_bucket
-                        and not last_bucket_announced
+                    if wh and should_announce_seeding_progress(
+                        player_buckets=config.discord_seeding_player_buckets,
+                        total_players=total_players,
+                        prev_announced_bucket=prev_announced_bucket,
+                        next_player_bucket=next_player_bucket,
+                        last_bucket_announced=last_bucket_announced,
                     ):
+                        logger.debug(
+                            f"{next_player_bucket=} {config.discord_seeding_player_buckets[-1]=}"
+                        )
                         if (
                             next_player_bucket
                             == config.discord_seeding_player_buckets[-1]
                         ):
+                            logger.debug(f"setting last_bucket_announced=True")
                             last_bucket_announced = True
 
-                        prev_announced_player_count = next_player_bucket
+                        prev_announced_bucket = next_player_bucket
                         next_player_bucket = next(player_buckets)
+
+                        logger.debug(
+                            f"{prev_announced_bucket=} {next_player_bucket=} {player_buckets=}"
+                        )
 
                         public_info = await get_public_info(client, config.base_url)
                         embed = make_seed_announcement_embed(
