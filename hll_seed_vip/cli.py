@@ -62,7 +62,20 @@ async def main():
         try:
             while True:
                 players = await get_online_players(client, config.base_url)
+                if players is None:
+                    logger.debug(
+                        f"Did not receive a usable result from `get_online_players`, continuining"
+                    )
+                    continue
+
                 gamestate = await get_gamestate(client, config.base_url)
+
+                if gamestate is None:
+                    logger.debug(
+                        f"Did not receive a usable result from `get_gamestate`, continuining"
+                    )
+                    continue
+
                 total_players = (
                     gamestate.num_allied_players + gamestate.num_axis_players
                 )

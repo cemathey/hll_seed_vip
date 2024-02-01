@@ -85,6 +85,10 @@ async def get_online_players(
     for raw_player in result:
         name = raw_player["name"]
         steam_id_64 = steam_id_64 = raw_player["steam_id_64"]
+        if raw_player["profile"] is None:
+            # Apparently CRCON will occasionally not return a player profile
+            logger.debug(f"No CRCON profile, skipping {raw_player}")
+            continue
         current_playtime_seconds = raw_player["profile"]["current_playtime_seconds"]
         p = Player(
             name=name,
