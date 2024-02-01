@@ -1,14 +1,10 @@
-import inspect
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from functools import wraps
-from itertools import cycle
 from pathlib import Path
 from typing import Iterable
 
 import discord_webhook as discord
 import httpx
-import trio
 import yaml
 from humanize import naturaldelta, naturaltime
 from loguru import logger
