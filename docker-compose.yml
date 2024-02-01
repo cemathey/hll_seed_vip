@@ -7,7 +7,7 @@ services:
             - LOGURU_LEVEL=DEBUG
             - API_KEY=${API_KEY}
         init: true
-        container_name: hll_seed_vip
+        container_name: hll_seed_vip-${COMPOSE_PROJECT_NAME}
         volumes:
             - ./logs:/code/logs
             - ./config:/code/config
