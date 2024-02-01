@@ -47,6 +47,7 @@ def make_mock_server_pop(players: dict[str, Player] | None = None):
 def make_mock_config(
     url="http://example.com",
     dry_run=True,
+    buffer=timedelta(minutes=5),
     poll_time_seeded=60,
     poll_time_seeding=300,
     min_allies=1,
@@ -71,6 +72,7 @@ def make_mock_config(
         discord_player_count_message="{num_allied_players} - {num_axis_players}",
         discord_seeding_player_buckets=[10, 20, 30],
         dry_run=dry_run,
+        buffer=buffer,
         poll_time_seeded=poll_time_seeded,
         poll_time_seeding=poll_time_seeding,
         min_allies=min_allies,

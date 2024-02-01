@@ -1,6 +1,6 @@
 import os
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from itertools import cycle
 from pathlib import Path
 
@@ -55,6 +55,7 @@ async def main():
         player_buckets = cycle(config.discord_seeding_player_buckets)
         next_player_bucket = next(player_buckets)
         last_bucket_announced = False
+        seeded_timestamp: datetime | None = None
 
         gamestate = await get_gamestate(client, config.base_url)
         is_seeding = not is_seeded(config=config, gamestate=gamestate)
@@ -105,7 +106,9 @@ async def main():
 
                     expiration_timestamps = defaultdict(
                         lambda: calc_vip_expiration_timestamp(
-                            config=config, expiration=None, from_time=seeded_timestamp
+                            config=config,
+                            expiration=None,
+                            from_time=seeded_timestamp or datetime.now(tz=timezone.utc),
                         )
                     )
                     for player in current_vips.values():
@@ -174,13 +177,29 @@ async def main():
                     and not is_seeded(config=config, gamestate=gamestate)
                     and total_players > 0
                 ):
-                    logger.debug(f"not is_seeding and not is_seeded")
-                    is_seeding = True
+                    delta: timedelta | None = None
+                    if seeded_timestamp:
+                        delta = datetime.now(tz=timezone.utc) - seeded_timestamp
+
+                    if not seeded_timestamp:
+                        logger.debug(
+                            f"Back in seeding: seeded_timestamp={seeded_timestamp} {delta=} {config.buffer=}"
+                        )
+                        is_seeding = True
+                    elif delta and (delta > config.buffer):
+                        logger.debug(
+                            f"Back in seeding: seeded_timestamp={seeded_timestamp.isoformat()} {delta=} delta > buffer {delta > config.buffer} {config.buffer=}"
+                        )
+                        is_seeding = True
+                    else:
+                        logger.info(
+                            f"Delaying seeding mode due to buffer of {config.buffer} > {delta} time since seeded"
+                        )
 
                 if is_seeding:
                     sleep_time = config.poll_time_seeding
 
-                    # Announce seeding progres
+                    # Announce seeding progress
                     logger.debug(
                         f"whs={[wh.url for wh in whs]} {config.discord_seeding_player_buckets=} {total_players=} {prev_announced_bucket=} {next_player_bucket=} {last_bucket_announced=}"
                     )

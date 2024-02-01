@@ -44,6 +44,7 @@ def load_config(path: Path) -> ServerConfig:
         discord_player_count_message=discord["player_count_message"],
         discord_seeding_player_buckets=discord["seeding_player_buckets"],
         dry_run=raw_config["dry_run"],
+        buffer=timedelta(**requirements["buffer"]),
         poll_time_seeding=raw_config["poll_time_seeding"],
         poll_time_seeded=raw_config["poll_time_seeded"],
         min_allies=requirements["min_allies"],

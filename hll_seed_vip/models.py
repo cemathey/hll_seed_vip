@@ -11,6 +11,7 @@ class ConfigTimeDeltaType(TypedDict):
 
 
 class ConfigRequirementsType(TypedDict):
+    buffer: ConfigTimeDeltaType
     min_allies: int
     max_allies: int
     min_axis: int
@@ -60,6 +61,7 @@ class ServerConfig(pydantic.BaseModel):
     discord_seeding_player_buckets: list[int]
     dry_run: bool
 
+    buffer: timedelta
     poll_time_seeding: int
     poll_time_seeded: int
 

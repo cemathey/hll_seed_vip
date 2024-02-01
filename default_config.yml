@@ -41,6 +41,16 @@ player_messages:
   # set to an empty string "" to disable
   non_vip: "Thank you for helping us seed.\n\nThe server is now live and the regular rules apply."
 requirements:
+  # The amount of time (it is the sum of all the categories) that must pass before the server can go back into seeding mode after it has seeded
+  # This prevents messaging players/posting Discord messages continuously if the server is hovering around
+  # your player requirements and dips below and goes back to seeding multiple times
+  # Do note that anyone who joins the server during this buffer window won't earn any rewards if the server
+  # seeds again before the buffer expires
+  # Set to all 0s to disable
+  buffer:
+    seconds: 0
+    minutes: 10
+    hours: 0
   # The min/max players per team the server needs to have to count as 'seeding'
   min_allies: 0
   min_axis: 0
