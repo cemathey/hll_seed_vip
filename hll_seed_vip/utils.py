@@ -53,6 +53,7 @@ def load_config(path: Path) -> ServerConfig:
         max_axis=requirements["max_axis"],
         minimum_play_time=timedelta(**requirements["minimum_play_time"]),
         online_when_seeded=requirements["online_when_seeded"],
+        forward=vip_reward["forward"],
         player_name_not_current_vip=vip_reward["player_name_not_current_vip"],
         cumulative_vip=vip_reward["cumulative"],
         vip_reward=timedelta(**vip_reward["timeframe"]),
@@ -280,6 +281,7 @@ async def reward_players(
                 steam_id_64=steam_id_64,
                 player_name=vip_name,
                 expiration_timestamp=expiration_date,
+                forward=config.forward,
             )
 
         else:

@@ -64,6 +64,8 @@ requirements:
     minutes: 5
     hours: 0
 vip_reward:
+  # Whether to forward VIP if you use multiple game servers
+  forward: true
   # The name used to add VIP in CRCON if the player isn't currently a VIP
   # If the player is a current VIP their existing VIP name is used
   # {player_name} is their current in game player name

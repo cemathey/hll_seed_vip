@@ -126,11 +126,13 @@ async def add_vip(
     steam_id_64: str,
     player_name: str,
     expiration_timestamp: datetime | None,
+    forward: bool,
     endpoint="api/do_add_vip",
 ):
     url = urllib.parse.urljoin(server_url, endpoint)
 
     body = {
+        "forward": forward,
         "steam_id_64": steam_id_64,
         "name": player_name,
         "expiration": expiration_timestamp.isoformat()
