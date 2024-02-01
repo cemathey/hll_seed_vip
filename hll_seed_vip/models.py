@@ -129,7 +129,7 @@ class PlayerCountCondition(BaseCondition):
 class PlayTimeCondition(BaseCondition):
     min_time_secs: int = pydantic.Field(ge=1)
 
-    current_time_secs: int = pydantic.Field(ge=1)
+    current_time_secs: int = pydantic.Field(ge=0)
 
     def is_met(self):
         return self.current_time_secs >= self.min_time_secs
