@@ -37,6 +37,7 @@ class ConfigDiscordType(TypedDict):
 
 class ConfigPlayerMessageType(TypedDict):
     reward: str
+    non_vip: str
 
 
 class ConfigType(TypedDict):
@@ -74,6 +75,7 @@ class ServerConfig(pydantic.BaseModel):
 
     # player messages
     message_reward: str
+    message_non_vip: str
 
     # rewards
     player_name_not_current_vip: str

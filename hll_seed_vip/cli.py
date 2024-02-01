@@ -1,4 +1,5 @@
 import os
+from collections import defaultdict
 from datetime import datetime, timezone
 from itertools import cycle
 from pathlib import Path
@@ -9,19 +10,15 @@ import trio
 from loguru import logger
 
 from hll_seed_vip.constants import API_KEY, API_KEY_FORMAT
-from hll_seed_vip.io import (
-    get_gamestate,
-    get_online_players,
-    get_public_info,
-    get_vips,
-    message_player,
-    reward_players,
-)
+from hll_seed_vip.io import get_gamestate, get_online_players, get_public_info, get_vips
 from hll_seed_vip.utils import (
+    calc_vip_expiration_timestamp,
     collect_steam_ids,
     is_seeded,
     load_config,
     make_seed_announcement_embed,
+    message_players,
+    reward_players,
     should_announce_seeding_progress,
 )
 
@@ -51,20 +48,22 @@ async def main():
     async with httpx.AsyncClient(
         headers=headers, event_hooks={"response": [raise_on_4xx_5xx]}
     ) as client:
-        to_add_vip_steam_ids: set[str] | None = set()
+        to_add_vip_steam_ids: set[str] = set()
+        no_reward_steam_ids: set[str] = set()
         player_name_lookup: dict[str, str] = {}
         prev_announced_bucket: int = 0
         player_buckets = cycle(config.discord_seeding_player_buckets)
         next_player_bucket = next(player_buckets)
         last_bucket_announced = False
+
         gamestate = await get_gamestate(client, config.base_url)
         is_seeding = not is_seeded(config=config, gamestate=gamestate)
         try:
             while True:
-                players = await get_online_players(client, config.base_url)
-                if players is None:
+                online_players = await get_online_players(client, config.base_url)
+                if online_players is None:
                     logger.debug(
-                        f"Did not receive a usable result from `get_online_players`, continuining"
+                        f"Did not receive a usable result from `get_online_players`, continuing"
                     )
                     continue
 
@@ -72,7 +71,7 @@ async def main():
 
                 if gamestate is None:
                     logger.debug(
-                        f"Did not receive a usable result from `get_gamestate`, continuining"
+                        f"Did not receive a usable result from `get_gamestate`, continuing"
                     )
                     continue
 
@@ -81,15 +80,15 @@ async def main():
                 )
 
                 player_name_lookup |= {
-                    p.steam_id_64: p.name for p in players.players.values()
+                    p.steam_id_64: p.name for p in online_players.players.values()
                 }
 
                 logger.debug(
-                    f"{is_seeding=} {len(players.players.keys())} online players (`get_players`), {gamestate.num_allied_players} allied {gamestate.num_axis_players} axis players (gamestate)",
+                    f"{is_seeding=} {len(online_players.players.keys())} online players (`get_players`), {gamestate.num_allied_players} allied {gamestate.num_axis_players} axis players (gamestate)",
                 )
                 to_add_vip_steam_ids = collect_steam_ids(
                     config=config,
-                    players=players,
+                    players=online_players,
                     cum_steam_ids=to_add_vip_steam_ids,
                 )
 
@@ -99,16 +98,54 @@ async def main():
                     logger.info(f"Server seeded at {seeded_timestamp.isoformat()}")
                     current_vips = await get_vips(client, config.base_url)
 
+                    # Players who were online when we seeded but didn't meet the criteria for VIP
+                    no_reward_steam_ids = {
+                        p.steam_id_64 for p in online_players.players.values()
+                    } - to_add_vip_steam_ids
+
+                    expiration_timestamps = defaultdict(
+                        lambda: calc_vip_expiration_timestamp(
+                            config=config, expiration=None, from_time=seeded_timestamp
+                        )
+                    )
+                    for player in current_vips.values():
+                        expiration_timestamps[
+                            player.player.steam_id_64
+                        ] = calc_vip_expiration_timestamp(
+                            config=config,
+                            expiration=player.expiration_date if player else None,
+                            from_time=seeded_timestamp,
+                        )
+
+                    # Add or update VIP in CRCON
                     await reward_players(
                         client=client,
                         config=config,
                         to_add_vip_steam_ids=to_add_vip_steam_ids,
                         current_vips=current_vips,
-                        seeded_timestamp=seeded_timestamp,
                         players_lookup=player_name_lookup,
+                        expiration_timestamps=expiration_timestamps,
                     )
 
-                    # Post seeding complete message
+                    # Message those who earned VIP
+                    await message_players(
+                        client=client,
+                        config=config,
+                        message=config.message_reward,
+                        steam_ids=to_add_vip_steam_ids,
+                        expiration_timestamps=expiration_timestamps,
+                    )
+
+                    # Message those who did not earn
+                    await message_players(
+                        client=client,
+                        config=config,
+                        message=config.message_non_vip,
+                        steam_ids=no_reward_steam_ids,
+                        expiration_timestamps=None,
+                    )
+
+                    # Post seeding complete Discord message
                     if whs:
                         public_info = await get_public_info(client, config.base_url)
                         logger.debug(

@@ -1,4 +1,5 @@
 import inspect
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 from itertools import cycle
@@ -12,6 +13,7 @@ import yaml
 from humanize import naturaldelta, naturaltime
 from loguru import logger
 
+from hll_seed_vip.io import add_vip, message_player
 from hll_seed_vip.models import (
     BaseCondition,
     ConfigDiscordType,
@@ -24,34 +26,8 @@ from hll_seed_vip.models import (
     PlayTimeCondition,
     ServerConfig,
     ServerPopulation,
+    VipPlayer,
 )
-
-
-def with_backoff_retry():
-    backoffs = (0, 1, 1.5, 2, 4, 8, 16)
-
-    def decorator(func):
-        @wraps(func)
-        async def wrapped(*args, **kwargs):
-            # Helpfully sourced (with updates) from
-            # https://stackoverflow.com/questions/218616/how-to-get-method-parameter-names
-            args_name = inspect.getfullargspec(func)[0]
-            args_dict = dict(zip(args_name, args))
-            server_url: str = args_dict.get("server_url", None)
-            for idx, backoff in enumerate(cycle(backoffs)):
-                try:
-                    return await func(*args, **kwargs)
-                except httpx.HTTPError as e:
-                    logger.error(e)
-                    logger.warning(
-                        f"Retrying attempt {idx+1}, sleeping for {backoff} seconds for {server_url} function={func.__name__}"
-                    )
-                    await trio.sleep(backoff)
-                    continue
-
-        return wrapped
-
-    return decorator
 
 
 def load_config(path: Path) -> ServerConfig:
@@ -84,6 +60,7 @@ def load_config(path: Path) -> ServerConfig:
         cumulative_vip=vip_reward["cumulative"],
         vip_reward=timedelta(**vip_reward["timeframe"]),
         message_reward=player_messages["reward"],
+        message_non_vip=player_messages["non_vip"],
         nice_time_delta=vip_reward["nice_time_delta"],
         nice_expiration_date=vip_reward["nice_expiration_date"],
     )
@@ -239,3 +216,76 @@ def should_announce_seeding_progress(
         and total_players >= next_player_bucket
         and not last_bucket_announced
     )
+
+
+async def message_players(
+    client: httpx.AsyncClient,
+    config: ServerConfig,
+    message: str,
+    steam_ids: Iterable[str],
+    expiration_timestamps: defaultdict[str, datetime] | None,
+):
+    for steam_id in steam_ids:
+        if expiration_timestamps:
+            formatted_message = format_player_message(
+                message=message,
+                vip_reward=config.vip_reward,
+                vip_expiration=expiration_timestamps[steam_id],
+                nice_time_delta=config.nice_time_delta,
+                nice_expiration_date=config.nice_expiration_date,
+            )
+        else:
+            formatted_message = message
+
+        if config.dry_run:
+            logger.info(f"{config.dry_run=} messaging {steam_id}: {formatted_message}")
+        else:
+            await message_player(
+                client=client,
+                server_url=config.base_url,
+                steam_id_64=steam_id,
+                message=formatted_message,
+            )
+
+
+async def reward_players(
+    client: httpx.AsyncClient,
+    config: ServerConfig,
+    to_add_vip_steam_ids: set[str],
+    current_vips: dict[str, VipPlayer],
+    players_lookup: dict[str, str],
+    expiration_timestamps: defaultdict[str, datetime],
+):
+    # TODO: make concurrent
+    logger.info(f"Rewarding players with VIP {config.dry_run=}")
+    logger.info(f"Total={len(to_add_vip_steam_ids)} {to_add_vip_steam_ids=}")
+    logger.debug(f"Total={len(current_vips)=} {current_vips=}")
+    for steam_id_64 in to_add_vip_steam_ids:
+        player = current_vips.get(steam_id_64)
+        expiration_date = expiration_timestamps[steam_id_64]
+
+        vip_name = (
+            player.player.name
+            if player
+            else format_vip_reward_name(
+                players_lookup.get(steam_id_64, "No player name found"),
+                format_str=config.player_name_not_current_vip,
+            )
+        )
+
+        if not config.dry_run:
+            logger.info(
+                f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {vip_name=} {expiration_date=}",
+            )
+            await add_vip(
+                client=client,
+                server_url=config.base_url,
+                steam_id_64=steam_id_64,
+                player_name=vip_name,
+                expiration_timestamp=expiration_date,
+            )
+
+        else:
+            logger.info(
+                f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {vip_name=} {expiration_date=}",
+            )

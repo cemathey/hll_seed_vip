@@ -1,23 +1,42 @@
+import inspect
 import urllib.parse
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+from functools import wraps
+from itertools import cycle
 from typing import Any
 
 import httpx
+import trio
 from loguru import logger
 
-from hll_seed_vip.models import (
-    GameState,
-    Player,
-    ServerConfig,
-    ServerPopulation,
-    VipPlayer,
-)
-from hll_seed_vip.utils import (
-    calc_vip_expiration_timestamp,
-    format_player_message,
-    format_vip_reward_name,
-    with_backoff_retry,
-)
+from hll_seed_vip.models import GameState, Player, ServerPopulation, VipPlayer
+
+
+def with_backoff_retry():
+    backoffs = (0, 1, 1.5, 2, 4, 8, 16)
+
+    def decorator(func):
+        @wraps(func)
+        async def wrapped(*args, **kwargs):
+            # Helpfully sourced (with updates) from
+            # https://stackoverflow.com/questions/218616/how-to-get-method-parameter-names
+            args_name = inspect.getfullargspec(func)[0]
+            args_dict = dict(zip(args_name, args))
+            server_url: str = args_dict.get("server_url", None)
+            for idx, backoff in enumerate(cycle(backoffs)):
+                try:
+                    return await func(*args, **kwargs)
+                except httpx.HTTPError as e:
+                    logger.error(e)
+                    logger.warning(
+                        f"Retrying attempt {idx+1}, sleeping for {backoff} seconds for {server_url} function={func.__name__}"
+                    )
+                    await trio.sleep(backoff)
+                    continue
+
+        return wrapped
+
+    return decorator
 
 
 @with_backoff_retry()
@@ -136,67 +155,5 @@ async def message_player(
 ):
     url = urllib.parse.urljoin(server_url, endpoint)
     body = {"steam_id_64": steam_id_64, "message": message}
+    logger.info(f"Messaging player {steam_id_64}: {message}")
     response = await client.post(url=url, json=body)
-    logger.info(f"messaged player {steam_id_64}: {message}")
-
-
-async def reward_players(
-    client: httpx.AsyncClient,
-    config: ServerConfig,
-    to_add_vip_steam_ids: set[str],
-    current_vips: dict[str, VipPlayer],
-    seeded_timestamp: datetime,
-    players_lookup: dict[str, str],
-):
-    # TODO: make concurrent
-    logger.info(f"Rewarding players with VIP {config.dry_run=}")
-    logger.info(f"Total={len(to_add_vip_steam_ids)} {to_add_vip_steam_ids=}")
-    logger.debug(f"Total={len(current_vips)=} {current_vips=}")
-    for steam_id_64 in to_add_vip_steam_ids:
-        player = current_vips.get(steam_id_64)
-        expiration_date = calc_vip_expiration_timestamp(
-            config=config,
-            expiration=player.expiration_date if player else None,
-            from_time=seeded_timestamp,
-        )
-        msg = format_player_message(
-            config.message_reward,
-            vip_reward=config.vip_reward,
-            vip_expiration=expiration_date,
-            nice_time_delta=config.nice_time_delta,
-            nice_expiration_date=config.nice_expiration_date,
-        )
-        vip_name = (
-            player.player.name
-            if player
-            else format_vip_reward_name(
-                players_lookup.get(steam_id_64, "No player name found"),
-                format_str=config.player_name_not_current_vip,
-            )
-        )
-        if not config.dry_run:
-            logger.info(
-                f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {vip_name=} {expiration_date=}",
-            )
-            await add_vip(
-                client=client,
-                server_url=config.base_url,
-                steam_id_64=steam_id_64,
-                player_name=vip_name,
-                expiration_timestamp=expiration_date,
-            )
-
-            if config.message_reward:
-                logger.info(f"{config.dry_run=} messaging {steam_id_64}: {msg}")
-                await message_player(
-                    client,
-                    server_url=config.base_url,
-                    steam_id_64=steam_id_64,
-                    message=msg,
-                )
-
-        else:
-            logger.info(
-                f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {vip_name=} {expiration_date=}",
-            )
-            logger.info(f"{config.dry_run=} messaging {steam_id_64}: {msg}")

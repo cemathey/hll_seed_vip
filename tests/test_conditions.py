@@ -59,6 +59,7 @@ def make_mock_config(
     cumulative_vip=False,
     vip_reward=timedelta(hours=24),
     message_reward="seed reward message",
+    message_non_vip="non vip message",
     nice_time_delta=True,
     nice_expiration_date=True,
 ) -> ServerConfig:
@@ -82,6 +83,7 @@ def make_mock_config(
         cumulative_vip=cumulative_vip,
         vip_reward=vip_reward,
         message_reward=message_reward,
+        message_non_vip=message_non_vip,
         nice_time_delta=nice_time_delta,
         nice_expiration_date=nice_expiration_date,
     )
