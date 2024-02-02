@@ -224,7 +224,7 @@ async def main():
                         next_player_bucket = next(player_buckets)
 
                         logger.debug(
-                            f"{prev_announced_bucket=} {next_player_bucket=} player_buckets={list(player_buckets)}"
+                            f"{prev_announced_bucket=} {next_player_bucket=} player_buckets={config.discord_seeding_player_buckets}"
                         )
 
                         public_info = await get_public_info(client, config.base_url)
