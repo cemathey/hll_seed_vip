@@ -1,5 +1,5 @@
 # set to true if you want to test, it will not actually add VIP or message players but will log as if it was
-dry_run: true
+dry_run: false
 # The URL of your CRCON
 # ex: http://example.com or https://example.com
 # ex: http://127.0.0.1:8010/
