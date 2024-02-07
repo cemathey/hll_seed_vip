@@ -6,6 +6,7 @@ from pathlib import Path
 
 import discord_webhook as discord
 import httpx
+import humanize
 import trio
 from loguru import logger
 
@@ -40,6 +41,14 @@ async def main():
         raise ValueError(f"{API_KEY} must be set")
 
     config = load_config(Path(CONFIG_DIR).joinpath(CONFIG_FILE_NAME))
+    try:
+        if config.language:
+            logger.info(f"Attempting to activate language={config.language}")
+            humanize.activate(config.language)
+    except FileNotFoundError:
+        logger.error(
+            f"Unable to activate language={config.language}, defaulting to English"
+        )
 
     whs: list[discord.DiscordWebhook] = []
     if config.discord_webhooks:

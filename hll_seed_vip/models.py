@@ -43,6 +43,7 @@ class ConfigPlayerMessageType(TypedDict):
 
 
 class ConfigType(TypedDict):
+    language: str | None
     base_url: str
     discord: ConfigDiscordType
     player_messages: ConfigPlayerMessageType
@@ -54,6 +55,7 @@ class ConfigType(TypedDict):
 
 
 class ServerConfig(pydantic.BaseModel):
+    language: str | None
     base_url: str
     discord_webhooks: list[pydantic.HttpUrl] = pydantic.Field(default_factory=list)
     discord_seeding_complete_message: str
