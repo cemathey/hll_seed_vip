@@ -37,6 +37,7 @@ def load_config(path: Path) -> ServerConfig:
     player_messages = ConfigPlayerMessageType(**raw_config["player_messages"])
 
     return ServerConfig(
+        language=raw_config.get("language"),
         base_url=raw_config["base_url"],
         discord_webhooks=discord["webhooks"],
         discord_seeding_complete_message=discord["seeding_complete_message"],

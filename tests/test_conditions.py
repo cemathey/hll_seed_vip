@@ -45,6 +45,7 @@ def make_mock_server_pop(players: dict[str, Player] | None = None):
 
 
 def make_mock_config(
+    lanugage=None,
     url="http://example.com",
     dry_run=True,
     buffer=timedelta(minutes=5),
@@ -66,6 +67,7 @@ def make_mock_config(
     nice_expiration_date=True,
 ) -> ServerConfig:
     return ServerConfig(
+        language=lanugage,
         base_url=str(HttpUrl(url=url)),  # type: ignore
         discord_webhooks=[],
         discord_seeding_complete_message="Server is live",

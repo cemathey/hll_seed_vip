@@ -1,3 +1,7 @@
+# The language to translate to if using the `nice_time_delta` and `nice_expiration_date` settings
+# Any valid language code shoud work, look here for examples: https://gist.github.com/jacobbubu/1836273
+# By default it is English, leave it as `null` unless you want to translate it
+language: null
 # set to true if you want to test, it will not actually add VIP or message players but will log as if it was
 dry_run: false
 # The URL of your CRCON
