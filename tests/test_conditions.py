@@ -9,8 +9,15 @@ from hll_seed_vip.models import (
     PlayerCountCondition,
     ServerConfig,
     ServerPopulation,
+    VipPlayer,
 )
-from hll_seed_vip.utils import all_met, calc_vip_expiration_timestamp, collect_steam_ids
+from hll_seed_vip.utils import (
+    all_met,
+    calc_vip_expiration_timestamp,
+    collect_steam_ids,
+    has_indefinite_vip,
+    filter_indefinite_vip_steam_ids,
+)
 
 
 def make_mock_gamestate(
@@ -35,6 +42,19 @@ def make_mock_player(
         steam_id_64=steam_id_64,
         current_playtime_seconds=current_playertime_seconds,
     )
+
+
+def make_mock_vip_player(steam_id_64: str, expiration_date: datetime | None = None):
+    return VipPlayer(
+        player=make_mock_player(steam_id_64=steam_id_64),
+        expiration_date=expiration_date,
+    )
+
+
+def make_moc_get_vips_dict(vips: list[VipPlayer]) -> dict[str, VipPlayer]:
+    if vips is None:
+        vips = []
+    return {v.player.steam_id_64: v for v in vips}
 
 
 def make_mock_server_pop(players: dict[str, Player] | None = None):
@@ -132,14 +152,16 @@ def test_player_count_conditions(conditions, expected):
         (
             make_mock_config(cumulative_vip=False, vip_reward=timedelta(hours=24)),
             None,
-            datetime.fromisoformat("2023-12-20T22:38:13.780570"),
-            datetime.fromisoformat("2023-12-20T22:38:13.780570") + timedelta(hours=24),
+            datetime.fromisoformat("2023-12-20T22:38:13.780570:00Z"),
+            datetime.fromisoformat("2023-12-20T22:38:13.780570:00Z")
+            + timedelta(hours=24),
         ),
         (
             make_mock_config(cumulative_vip=True, vip_reward=timedelta(hours=24)),
-            datetime.fromisoformat("2023-12-21T22:38:13.780570"),
-            datetime.fromisoformat("2023-12-20T22:38:13.780570"),
-            datetime.fromisoformat("2023-12-21T22:38:13.780570") + timedelta(hours=24),
+            datetime.fromisoformat("2023-12-21T22:38:13.780570:00Z"),
+            datetime.fromisoformat("2023-12-20T22:38:13.780570:00Z"),
+            datetime.fromisoformat("2023-12-21T22:38:13.780570:00Z")
+            + timedelta(hours=24),
         ),
     ],
 )
@@ -155,6 +177,47 @@ def test_cumulative_expirations(
         )
         == expected
     )
+
+
+def test_has_indefinite_vip():
+    vip_player = make_mock_vip_player(steam_id_64="1")
+    assert not has_indefinite_vip(vip_player)
+
+    vip_player = make_mock_vip_player(
+        # this expiration date is in the past
+        steam_id_64="1", expiration_date="2024-01-01T00:00:00Z"
+    )
+    assert not has_indefinite_vip(vip_player)
+
+    vip_player = make_mock_vip_player(
+        steam_id_64="1", expiration_date="3000-01-01T00:00:00Z"
+    )
+    assert has_indefinite_vip(vip_player)
+
+    vip_player = make_mock_vip_player(
+        steam_id_64="1", expiration_date="3333-01-01T00:00:00Z"
+    )
+    assert has_indefinite_vip(vip_player)
+
+
+def test_filter_indefinite_vip_steam_ids():
+    vips = {
+        "1": make_mock_vip_player(
+            # this expiration date is in the past
+            steam_id_64="1", expiration_date="2024-01-01T00:00:00Z"
+        ),
+        "2": make_mock_vip_player(
+            steam_id_64="2", expiration_date="3000-01-01T00:00:00Z"
+        ),
+        "3": make_mock_vip_player(
+            steam_id_64="3", expiration_date="3333-01-01T00:00:00Z"
+        ),
+    }
+
+    assert set(filter_indefinite_vip_steam_ids(vips)) == {"2", "3"}
+
+    vips = {}
+    assert set(filter_indefinite_vip_steam_ids(vips)) == set()
 
 
 def test_collect_steam_ids():
