@@ -23,6 +23,7 @@ from hll_seed_vip.utils import (
     reward_players,
     should_announce_seeding_progress,
     filter_indefinite_vip_steam_ids,
+    filter_online_players,
 )
 
 CONFIG_FILE_NAME: Final = os.getenv("CONFIG_FILE_NAME", "config.yml")
@@ -110,6 +111,9 @@ async def main():
                     seeded_timestamp = datetime.now(tz=timezone.utc)
                     logger.info(f"Server seeded at {seeded_timestamp.isoformat()}")
                     current_vips = await get_vips(client, config.base_url)
+
+                    # only include online players in the current_vips
+                    current_vips = filter_online_players(current_vips, online_players)
 
                     # no vip reward needed for indefinite vip holders
                     indefinite_vip_steam_ids = filter_indefinite_vip_steam_ids(
