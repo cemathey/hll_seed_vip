@@ -51,10 +51,15 @@ def make_mock_vip_player(steam_id_64: str, expiration_date: datetime | None = No
     )
 
 
-def make_moc_get_vips_dict(vips: list[VipPlayer]) -> dict[str, VipPlayer]:
-    if vips is None:
-        vips = []
-    return {v.player.steam_id_64: v for v in vips}
+def make_mock_get_vips_dict(
+    data: dict[str, datetime] | None = None
+) -> dict[str, VipPlayer]:
+    return {
+        steam_id_64: make_mock_vip_player(
+            steam_id_64=steam_id_64, expiration_date=expiration_date
+        )
+        for steam_id_64, expiration_date in (data or {}).items()
+    }
 
 
 def make_mock_server_pop(players: dict[str, Player] | None = None):
@@ -185,7 +190,8 @@ def test_has_indefinite_vip():
 
     vip_player = make_mock_vip_player(
         # this expiration date is in the past
-        steam_id_64="1", expiration_date="2024-01-01T00:00:00Z"
+        steam_id_64="1",
+        expiration_date="2024-01-01T00:00:00Z",
     )
     assert not has_indefinite_vip(vip_player)
 
@@ -201,18 +207,14 @@ def test_has_indefinite_vip():
 
 
 def test_filter_indefinite_vip_steam_ids():
-    vips = {
-        "1": make_mock_vip_player(
+    vips = make_mock_get_vips_dict(
+        data={
             # this expiration date is in the past
-            steam_id_64="1", expiration_date="2024-01-01T00:00:00Z"
-        ),
-        "2": make_mock_vip_player(
-            steam_id_64="2", expiration_date="3000-01-01T00:00:00Z"
-        ),
-        "3": make_mock_vip_player(
-            steam_id_64="3", expiration_date="3333-01-01T00:00:00Z"
-        ),
-    }
+            "1": "2024-01-01T00:00:00Z",
+            "2": "3000-01-01T00:00:00Z",
+            "3": "3333-01-01T00:00:00Z",
+        }
+    )
 
     assert set(filter_indefinite_vip_steam_ids(vips)) == {"2", "3"}
 

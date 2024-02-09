@@ -27,7 +27,7 @@ from hll_seed_vip.models import (
 from hll_seed_vip.constants import INDEFINITE_VIP_DATE
 
 
-def has_indefinite_vip(player: VipPlayer) -> bool:
+def has_indefinite_vip(player: VipPlayer | None) -> bool:
     """Return true if the player has an indefinite VIP status"""
     if player is None or player.expiration_date is None:
         return False

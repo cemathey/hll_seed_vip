@@ -42,6 +42,7 @@ player_messages:
   # set to an empty string "" to disable
   reward: "Thank you for helping us seed.\n\nYou've been granted {vip_reward} of VIP\n\nYour VIP currently expires: {vip_expiration}"
   # The message sent to a player after the server has seeded who did not earn VIP
+  # The non_vip message will also be sent to players who have VIP that doesn't expire
   # set to an empty string "" to disable
   non_vip: "Thank you for helping us seed.\n\nThe server is now live and the regular rules apply."
 requirements:
