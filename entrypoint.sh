@@ -2,6 +2,8 @@
 set -e
 set -x
 
+export TAG_VERSION=$(cat /code/tag_version)
+
 if [ ! -d "./config" ]
 then
     echo "Creating config directory"
