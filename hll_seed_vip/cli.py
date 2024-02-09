@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from itertools import cycle
 from pathlib import Path
+from typing import Final
 
 import discord_webhook as discord
 import httpx
@@ -23,10 +24,11 @@ from hll_seed_vip.utils import (
     should_announce_seeding_progress,
 )
 
-CONFIG_FILE_NAME = os.getenv("CONFIG_FILE_NAME", "config.yml")
-CONFIG_DIR = os.getenv("CONFIG_DIR", "./config")
-LOG_FILE_NAME = os.getenv("LOG_FILE_NAME", "seeding.log")
-LOG_DIR = os.getenv("LOG_DIR", "./logs")
+CONFIG_FILE_NAME: Final = os.getenv("CONFIG_FILE_NAME", "config.yml")
+CONFIG_DIR: Final = os.getenv("CONFIG_DIR", "./config")
+LOG_FILE_NAME: Final = os.getenv("LOG_FILE_NAME", "seeding.log")
+LOG_DIR: Final = os.getenv("LOG_DIR", "./logs")
+TAG_VERSION: Final = os.getenv("TAG_VERSION", "<unknown>")
 
 
 async def raise_on_4xx_5xx(response):
@@ -255,7 +257,7 @@ async def main():
                 else:
                     sleep_time = config.poll_time_seeded
 
-                logger.info(f"sleeping {sleep_time=}")
+                logger.info(f"{TAG_VERSION=} sleeping {sleep_time=}")
                 await trio.sleep(sleep_time)
         except* Exception as eg:
             for e in eg.exceptions:
