@@ -191,17 +191,17 @@ def test_has_indefinite_vip():
     vip_player = make_mock_vip_player(
         # this expiration date is in the past
         steam_id_64="1",
-        expiration_date="2024-01-01T00:00:00Z",
+        expiration_date=datetime.fromisoformat("2024-01-01T00:00:00Z"),
     )
     assert not has_indefinite_vip(vip_player)
 
     vip_player = make_mock_vip_player(
-        steam_id_64="1", expiration_date="3000-01-01T00:00:00Z"
+        steam_id_64="1", expiration_date=datetime.fromisoformat("3000-01-01T00:00:00Z")
     )
     assert has_indefinite_vip(vip_player)
 
     vip_player = make_mock_vip_player(
-        steam_id_64="1", expiration_date="3333-01-01T00:00:00Z"
+        steam_id_64="1", expiration_date=datetime.fromisoformat("3333-01-01T00:00:00Z")
     )
     assert has_indefinite_vip(vip_player)
 
@@ -210,9 +210,9 @@ def test_filter_indefinite_vip_steam_ids():
     vips = make_mock_get_vips_dict(
         data={
             # this expiration date is in the past
-            "1": "2024-01-01T00:00:00Z",
-            "2": "3000-01-01T00:00:00Z",
-            "3": "3333-01-01T00:00:00Z",
+            "1": datetime.fromisoformat("2024-01-01T00:00:00Z"),
+            "2": datetime.fromisoformat("3000-01-01T00:00:00Z"),
+            "3": datetime.fromisoformat("3333-01-01T00:00:00Z"),
         }
     )
 
