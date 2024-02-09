@@ -24,7 +24,25 @@ from hll_seed_vip.models import (
     ServerPopulation,
     VipPlayer,
 )
+from hll_seed_vip.constants import INDEFINITE_VIP_DATE
 
+
+def has_indefinite_vip(player: VipPlayer | None) -> bool:
+    """Return true if the player has an indefinite VIP status"""
+    if player is None or player.expiration_date is None:
+        return False
+    expiration = player.expiration_date
+    return expiration >= INDEFINITE_VIP_DATE
+
+def filter_indefinite_vip_steam_ids(
+    current_vips: dict[str, VipPlayer]
+) -> set[str]:
+    """Return a set of steam IDs that have indefinite VIP status"""
+    return {
+        steam_id_64
+        for steam_id_64, vip_player in current_vips.items()
+        if has_indefinite_vip(vip_player)
+    }
 
 def load_config(path: Path) -> ServerConfig:
     with open(path) as fp:
@@ -262,6 +280,12 @@ async def reward_players(
     for steam_id_64 in to_add_vip_steam_ids:
         player = current_vips.get(steam_id_64)
         expiration_date = expiration_timestamps[steam_id_64]
+
+        if has_indefinite_vip(player):
+            logger.info(
+                f"{config.dry_run=} Skipping! pre-existing indefinite VIP for {steam_id_64=} {player=} {vip_name=} {expiration_date=}"
+            )
+            continue
 
         vip_name = (
             player.player.name

@@ -22,6 +22,7 @@ from hll_seed_vip.utils import (
     message_players,
     reward_players,
     should_announce_seeding_progress,
+    filter_indefinite_vip_steam_ids,
 )
 
 CONFIG_FILE_NAME: Final = os.getenv("CONFIG_FILE_NAME", "config.yml")
@@ -110,6 +111,12 @@ async def main():
                     logger.info(f"Server seeded at {seeded_timestamp.isoformat()}")
                     current_vips = await get_vips(client, config.base_url)
 
+                    # no vip reward needed for indefinite vip holders
+                    indefinite_vip_steam_ids = filter_indefinite_vip_steam_ids(
+                        current_vips
+                    )
+                    to_add_vip_steam_ids -= indefinite_vip_steam_ids
+
                     # Players who were online when we seeded but didn't meet the criteria for VIP
                     no_reward_steam_ids = {
                         p.steam_id_64 for p in online_players.players.values()
@@ -123,12 +130,12 @@ async def main():
                         )
                     )
                     for player in current_vips.values():
-                        expiration_timestamps[
-                            player.player.steam_id_64
-                        ] = calc_vip_expiration_timestamp(
-                            config=config,
-                            expiration=player.expiration_date if player else None,
-                            from_time=seeded_timestamp,
+                        expiration_timestamps[player.player.steam_id_64] = (
+                            calc_vip_expiration_timestamp(
+                                config=config,
+                                expiration=player.expiration_date if player else None,
+                                from_time=seeded_timestamp,
+                            )
                         )
 
                     # Add or update VIP in CRCON
