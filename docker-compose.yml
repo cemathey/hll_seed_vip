@@ -9,9 +9,10 @@ services:
         init: true
         container_name: hll_seed_vip-${COMPOSE_PROJECT_NAME}
         volumes:
-            - ./logs:/code/logs
-            - ./config:/code/config
+            - ${LOG_DIR}:/code/logs
+            - ${CONFIG_DIR}:/code/config
         restart: unless-stopped
         image: ${DOCKER_REPOSITORY}:${DOCKER_TAG}
         build:
+          context: .
           dockerfile: ./Dockerfile
