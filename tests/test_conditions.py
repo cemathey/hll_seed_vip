@@ -17,6 +17,7 @@ from hll_seed_vip.utils import (
     collect_steam_ids,
     has_indefinite_vip,
     filter_indefinite_vip_steam_ids,
+    filter_online_players,
 )
 
 
@@ -36,7 +37,7 @@ def make_mock_gamestate(
 
 def make_mock_player(
     steam_id_64: str, name: str = "No Name", current_playertime_seconds: int = 1
-):
+) -> Player:
     return Player(
         name=name,
         steam_id_64=steam_id_64,
@@ -44,7 +45,9 @@ def make_mock_player(
     )
 
 
-def make_mock_vip_player(steam_id_64: str, expiration_date: datetime | None = None):
+def make_mock_vip_player(
+    steam_id_64: str, expiration_date: datetime | None = None
+) -> VipPlayer:
     return VipPlayer(
         player=make_mock_player(steam_id_64=steam_id_64),
         expiration_date=expiration_date,
@@ -62,7 +65,7 @@ def make_mock_get_vips_dict(
     }
 
 
-def make_mock_server_pop(players: dict[str, Player] | None = None):
+def make_mock_server_pop(players: dict[str, Player] | None = None) -> ServerPopulation:
     if players is None:
         players = {}
 
@@ -220,6 +223,34 @@ def test_filter_indefinite_vip_steam_ids():
 
     vips = {}
     assert set(filter_indefinite_vip_steam_ids(vips)) == set()
+
+
+def test_filter_online_players():
+    vips = make_mock_get_vips_dict(
+        data={
+            "1": datetime.fromisoformat("2024-01-01T00:00:00Z"),
+            "2": datetime.fromisoformat("3000-01-01T00:00:00Z"),
+            "3": datetime.fromisoformat("3333-01-01T00:00:00Z"),
+        }
+    )
+
+    players = make_mock_server_pop(
+        players={s: make_mock_player(steam_id_64=s) for s in ["0", "1", "2", "3", "4"]}
+    )
+    assert set(filter_online_players(vips, players)) == {"1", "2", "3"}
+
+    players = make_mock_server_pop(
+        players={s: make_mock_player(steam_id_64=s) for s in ["1", "3"]}
+    )
+    assert set(filter_online_players(vips, players)) == {"1", "3"}
+
+    players = make_mock_server_pop(
+        players={s: make_mock_player(steam_id_64=s) for s in ["1", "4"]}
+    )
+    assert set(filter_online_players(vips, players)) == {"1"}
+
+    players = make_mock_server_pop(players={})
+    assert set(filter_online_players(vips, players)) == set()
 
 
 def test_collect_steam_ids():
