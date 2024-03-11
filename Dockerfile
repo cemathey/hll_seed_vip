@@ -14,8 +14,10 @@ WORKDIR /code
 RUN apt update -y \
     && apt upgrade --no-install-recommends -y \ 
     curl \
-    build-essential
-RUN curl -sSL https://install.python-poetry.org | python3 -
+    pipx \
+    python3-venv
+RUN pipx ensurepath
+RUN pipx install poetry
 ENV PATH="/root/.local/bin:$PATH"
 COPY poetry.lock pyproject.toml ./
 RUN poetry install --no-root
