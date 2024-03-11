@@ -9,6 +9,7 @@ import yaml
 from humanize import naturaldelta, naturaltime
 from loguru import logger
 
+from hll_seed_vip.constants import INDEFINITE_VIP_DATE
 from hll_seed_vip.io import add_vip, message_player
 from hll_seed_vip.models import (
     BaseCondition,
@@ -24,7 +25,6 @@ from hll_seed_vip.models import (
     ServerPopulation,
     VipPlayer,
 )
-from hll_seed_vip.constants import INDEFINITE_VIP_DATE
 
 
 def has_indefinite_vip(player: VipPlayer | None) -> bool:
@@ -212,6 +212,10 @@ def make_seed_announcement_embed(
 ) -> discord.DiscordEmbed | None:
     if not message:
         return
+
+    logger.debug(
+        f"make_seed_announcement_embed {num_allied_players=} {num_axis_players=}"
+    )
 
     embed = discord.DiscordEmbed(title=message)
     embed.set_timestamp(datetime.now(tz=timezone.utc))
