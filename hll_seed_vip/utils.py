@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Iterable
+from typing import Iterable, Sequence
 
 import discord_webhook as discord
 import httpx
@@ -328,3 +328,19 @@ async def reward_players(
             logger.info(
                 f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {vip_name=} {expiration_date=}",
             )
+
+
+def get_next_player_bucket(
+    player_buckets: Sequence[int],
+    total_players: int,
+) -> int | None:
+    idx = None
+    for idx, ele in enumerate(player_buckets):
+        if ele > total_players:
+            break
+
+    try:
+        if idx:
+            return player_buckets[idx - 1]
+    except IndexError:
+        return None
