@@ -1,7 +1,6 @@
 import os
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from itertools import cycle
 from pathlib import Path
 from typing import Final
 
@@ -18,12 +17,12 @@ from hll_seed_vip.utils import (
     collect_steam_ids,
     filter_indefinite_vip_steam_ids,
     filter_online_players,
+    get_next_player_bucket,
     is_seeded,
     load_config,
     make_seed_announcement_embed,
     message_players,
     reward_players,
-    should_announce_seeding_progress,
 )
 
 CONFIG_FILE_NAME: Final = os.getenv("CONFIG_FILE_NAME", "config.yml")
@@ -65,8 +64,11 @@ async def main():
         no_reward_steam_ids: set[str] = set()
         player_name_lookup: dict[str, str] = {}
         prev_announced_bucket: int = 0
-        player_buckets = cycle(config.discord_seeding_player_buckets)
-        next_player_bucket = next(player_buckets)
+        player_buckets = config.discord_seeding_player_buckets
+        if player_buckets:
+            next_player_bucket = player_buckets[0]
+        else:
+            next_player_bucket = None
         last_bucket_announced = False
         seeded_timestamp: datetime | None = None
 
@@ -221,17 +223,20 @@ async def main():
                 if is_seeding:
                     sleep_time = config.poll_time_seeding
 
+                    # When we fall back into seeding with players still on the
+                    # server we want to announce the largest bucket possible or
+                    # it will announce from the smallest to the largest and spam
+                    # Discord with unneccessary announcements
+                    next_player_bucket = get_next_player_bucket(
+                        config.discord_seeding_player_buckets,
+                        total_players=total_players,
+                    )
+
                     # Announce seeding progress
                     logger.debug(
                         f"whs={[wh.url for wh in whs]} {config.discord_seeding_player_buckets=} {total_players=} {prev_announced_bucket=} {next_player_bucket=} {last_bucket_announced=}"
                     )
-                    if whs and should_announce_seeding_progress(
-                        player_buckets=config.discord_seeding_player_buckets,
-                        total_players=total_players,
-                        prev_announced_bucket=prev_announced_bucket,
-                        next_player_bucket=next_player_bucket,
-                        last_bucket_announced=last_bucket_announced,
-                    ):
+                    if whs and next_player_bucket:
                         logger.debug(
                             f"{next_player_bucket=} {config.discord_seeding_player_buckets[-1]=}"
                         )
@@ -243,7 +248,6 @@ async def main():
                             last_bucket_announced = True
 
                         prev_announced_bucket = next_player_bucket
-                        next_player_bucket = next(player_buckets)
 
                         logger.debug(
                             f"{prev_announced_bucket=} {next_player_bucket=} player_buckets={config.discord_seeding_player_buckets}"
