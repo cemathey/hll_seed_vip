@@ -340,7 +340,9 @@ def get_next_player_bucket(
             break
 
     try:
-        if idx:
+        if total_players > player_buckets[-1]:
+            return player_buckets[-1]
+        elif idx:
             return player_buckets[idx - 1]
     except IndexError:
         return None
