@@ -236,22 +236,8 @@ async def main():
                     logger.debug(
                         f"whs={[wh.url for wh in whs]} {config.discord_seeding_player_buckets=} {total_players=} {prev_announced_bucket=} {next_player_bucket=} {last_bucket_announced=}"
                     )
-                    if whs and next_player_bucket:
-                        logger.debug(
-                            f"{next_player_bucket=} {config.discord_seeding_player_buckets[-1]=}"
-                        )
-                        if (
-                            next_player_bucket
-                            == config.discord_seeding_player_buckets[-1]
-                        ):
-                            logger.debug(f"setting last_bucket_announced=True")
-                            last_bucket_announced = True
-
+                    if whs and next_player_bucket and not last_bucket_announced:
                         prev_announced_bucket = next_player_bucket
-
-                        logger.debug(
-                            f"{prev_announced_bucket=} {next_player_bucket=} player_buckets={config.discord_seeding_player_buckets}"
-                        )
 
                         public_info = await get_public_info(client, config.base_url)
                         embed = make_seed_announcement_embed(
@@ -264,6 +250,13 @@ async def main():
                             num_allied_players=gamestate.num_allied_players,
                             num_axis_players=gamestate.num_axis_players,
                         )
+                        if (
+                            next_player_bucket
+                            == config.discord_seeding_player_buckets[-1]
+                        ):
+                            logger.debug(f"setting last_bucket_announced=True")
+                            last_bucket_announced = True
+
                         if embed:
                             for wh in whs:
                                 wh.add_embed(embed)
