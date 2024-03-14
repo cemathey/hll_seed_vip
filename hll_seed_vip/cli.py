@@ -1,4 +1,5 @@
 import os
+import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -8,6 +9,7 @@ import discord_webhook as discord
 import httpx
 import humanize
 import trio
+import yaml
 from loguru import logger
 
 from hll_seed_vip.constants import API_KEY, API_KEY_FORMAT
@@ -43,7 +45,11 @@ async def main():
     if api_key is None:
         raise ValueError(f"{API_KEY} must be set")
 
-    config = load_config(Path(CONFIG_DIR).joinpath(CONFIG_FILE_NAME))
+    try:
+        config = load_config(Path(CONFIG_DIR).joinpath(CONFIG_FILE_NAME))
+    except yaml.YAMLError as e:
+        logger.error(f"Unable to parse your config file: {e}")
+        sys.exit(1)
     try:
         if config.language:
             logger.info(f"Attempting to activate language={config.language}")
