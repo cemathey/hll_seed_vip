@@ -213,9 +213,7 @@ def make_seed_announcement_embed(
     if not message:
         return
 
-    logger.debug(
-        f"make_seed_announcement_embed {num_allied_players=} {num_axis_players=}"
-    )
+    logger.debug(f"{num_allied_players=} {num_axis_players=}")
 
     embed = discord.DiscordEmbed(title=message)
     embed.set_timestamp(datetime.now(tz=timezone.utc))
