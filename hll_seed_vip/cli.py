@@ -236,7 +236,12 @@ async def main():
                     logger.debug(
                         f"whs={[wh.url for wh in whs]} {config.discord_seeding_player_buckets=} {total_players=} {prev_announced_bucket=} {next_player_bucket=} {last_bucket_announced=}"
                     )
-                    if whs and next_player_bucket and not last_bucket_announced:
+                    if (
+                        whs
+                        and next_player_bucket
+                        and not last_bucket_announced
+                        and prev_announced_bucket != next_player_bucket
+                    ):
                         prev_announced_bucket = next_player_bucket
 
                         public_info = await get_public_info(client, config.base_url)
