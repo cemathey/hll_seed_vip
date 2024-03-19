@@ -246,7 +246,8 @@ async def main():
                         whs
                         and next_player_bucket
                         and not last_bucket_announced
-                        and prev_announced_bucket <= next_player_bucket
+                        and prev_announced_bucket < next_player_bucket
+                        and total_players >= next_player_bucket
                     ):
                         prev_announced_bucket = next_player_bucket
 
