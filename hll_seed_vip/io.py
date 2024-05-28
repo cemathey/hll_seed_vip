@@ -144,7 +144,7 @@ async def add_vip(
     body = {
         "forward": forward,
         "player_id": player_id,
-        "name": player_name,
+        "description": player_name,
         "expiration": (
             expiration_timestamp.isoformat() if expiration_timestamp else None
         ),
