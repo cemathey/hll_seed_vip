@@ -92,8 +92,12 @@ async def get_gamestate(
     return GameState(
         raw_time_remaining=result["raw_time_remaining"],
         current_map=result["current_map"],
+        next_map=result["next_map"],
         num_allied_players=result["num_allied_players"],
         num_axis_players=result["num_axis_players"],
+        allied_score=result["allied_score"],
+        axis_score=result["axis_score"],
+        time_remaining=result["time_remaining"],
     )
 
 

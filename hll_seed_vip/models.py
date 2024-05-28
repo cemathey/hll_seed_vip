@@ -113,10 +113,14 @@ class ServerPopulation(pydantic.BaseModel):
 
 
 class GameState(pydantic.BaseModel):
-    raw_time_remaining: str
-    current_map: str
     num_allied_players: int
     num_axis_players: int
+    allied_score: int
+    axis_score: int
+    raw_time_remaining: str
+    time_remaining: float
+    current_map: "LayerType"
+    next_map: "LayerType"
 
 
 class BaseCondition(pydantic.BaseModel):
