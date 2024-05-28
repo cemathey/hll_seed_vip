@@ -38,8 +38,8 @@ def has_indefinite_vip(player: VipPlayer | None) -> bool:
 def filter_indefinite_vip_steam_ids(current_vips: dict[str, VipPlayer]) -> set[str]:
     """Return a set of steam IDs that have indefinite VIP status"""
     return {
-        steam_id_64
-        for steam_id_64, vip_player in current_vips.items()
+        player_id
+        for player_id, vip_player in current_vips.items()
         if has_indefinite_vip(vip_player)
     }
 
@@ -49,9 +49,9 @@ def filter_online_players(
 ) -> dict[str, VipPlayer]:
     """Return a dictionary of players that are online"""
     return {
-        steam_id_64: vip_player
-        for steam_id_64, vip_player in vips.items()
-        if steam_id_64 in players.players
+        player_id: vip_player
+        for player_id, vip_player in vips.items()
+        if player_id in players.players
     }
 
 
@@ -129,7 +129,7 @@ def check_player_conditions(
 ) -> set[str]:
     """Return a set of steam IDs that meet seeding criteria"""
     return set(
-        player.steam_id_64
+        player.player_id
         for player in server_pop.players.values()
         if PlayTimeCondition(
             min_time_secs=int(config.minimum_play_time.total_seconds()),
@@ -273,7 +273,7 @@ async def message_players(
             await message_player(
                 client=client,
                 server_url=config.base_url,
-                steam_id_64=steam_id,
+                player_id=steam_id,
                 message=formatted_message,
             )
 
@@ -290,13 +290,13 @@ async def reward_players(
     logger.info(f"Rewarding players with VIP {config.dry_run=}")
     logger.info(f"Total={len(to_add_vip_steam_ids)} {to_add_vip_steam_ids=}")
     logger.debug(f"Total={len(current_vips)=} {current_vips=}")
-    for steam_id_64 in to_add_vip_steam_ids:
-        player = current_vips.get(steam_id_64)
-        expiration_date = expiration_timestamps[steam_id_64]
+    for player_id in to_add_vip_steam_ids:
+        player = current_vips.get(player_id)
+        expiration_date = expiration_timestamps[player_id]
 
         if has_indefinite_vip(player):
             logger.info(
-                f"{config.dry_run=} Skipping! pre-existing indefinite VIP for {steam_id_64=} {player=} {vip_name=} {expiration_date=}"
+                f"{config.dry_run=} Skipping! pre-existing indefinite VIP for {player_id=} {player=} {vip_name=} {expiration_date=}"
             )
             continue
 
@@ -304,19 +304,19 @@ async def reward_players(
             player.player.name
             if player
             else format_vip_reward_name(
-                players_lookup.get(steam_id_64, "No player name found"),
+                players_lookup.get(player_id, "No player name found"),
                 format_str=config.player_name_not_current_vip,
             )
         )
 
         if not config.dry_run:
             logger.info(
-                f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {vip_name=} {expiration_date=}",
+                f"{config.dry_run=} adding VIP to {player_id=} {player=} {vip_name=} {expiration_date=}",
             )
             await add_vip(
                 client=client,
                 server_url=config.base_url,
-                steam_id_64=steam_id_64,
+                player_id=player_id,
                 player_name=vip_name,
                 expiration_timestamp=expiration_date,
                 forward=config.forward,
@@ -324,7 +324,7 @@ async def reward_players(
 
         else:
             logger.info(
-                f"{config.dry_run=} adding VIP to {steam_id_64=} {player=} {vip_name=} {expiration_date=}",
+                f"{config.dry_run=} adding VIP to {player_id=} {player=} {vip_name=} {expiration_date=}",
             )
 
 

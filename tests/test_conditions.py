@@ -15,9 +15,9 @@ from hll_seed_vip.utils import (
     all_met,
     calc_vip_expiration_timestamp,
     collect_steam_ids,
-    has_indefinite_vip,
     filter_indefinite_vip_steam_ids,
     filter_online_players,
+    has_indefinite_vip,
 )
 
 
@@ -36,20 +36,20 @@ def make_mock_gamestate(
 
 
 def make_mock_player(
-    steam_id_64: str, name: str = "No Name", current_playertime_seconds: int = 1
+    player_id: str, name: str = "No Name", current_playertime_seconds: int = 1
 ) -> Player:
     return Player(
         name=name,
-        steam_id_64=steam_id_64,
+        player_id=player_id,
         current_playtime_seconds=current_playertime_seconds,
     )
 
 
 def make_mock_vip_player(
-    steam_id_64: str, expiration_date: datetime | None = None
+    player_id: str, expiration_date: datetime | None = None
 ) -> VipPlayer:
     return VipPlayer(
-        player=make_mock_player(steam_id_64=steam_id_64),
+        player=make_mock_player(player_id=player_id),
         expiration_date=expiration_date,
     )
 
@@ -58,10 +58,10 @@ def make_mock_get_vips_dict(
     data: dict[str, datetime] | None = None
 ) -> dict[str, VipPlayer]:
     return {
-        steam_id_64: make_mock_vip_player(
-            steam_id_64=steam_id_64, expiration_date=expiration_date
+        player_id: make_mock_vip_player(
+            player_id=player_id, expiration_date=expiration_date
         )
-        for steam_id_64, expiration_date in (data or {}).items()
+        for player_id, expiration_date in (data or {}).items()
     }
 
 
@@ -188,23 +188,23 @@ def test_cumulative_expirations(
 
 
 def test_has_indefinite_vip():
-    vip_player = make_mock_vip_player(steam_id_64="1")
+    vip_player = make_mock_vip_player(player_id="1")
     assert not has_indefinite_vip(vip_player)
 
     vip_player = make_mock_vip_player(
         # this expiration date is in the past
-        steam_id_64="1",
+        player_id="1",
         expiration_date=datetime.fromisoformat("2024-01-01T00:00:00Z"),
     )
     assert not has_indefinite_vip(vip_player)
 
     vip_player = make_mock_vip_player(
-        steam_id_64="1", expiration_date=datetime.fromisoformat("3000-01-01T00:00:00Z")
+        player_id="1", expiration_date=datetime.fromisoformat("3000-01-01T00:00:00Z")
     )
     assert has_indefinite_vip(vip_player)
 
     vip_player = make_mock_vip_player(
-        steam_id_64="1", expiration_date=datetime.fromisoformat("3333-01-01T00:00:00Z")
+        player_id="1", expiration_date=datetime.fromisoformat("3333-01-01T00:00:00Z")
     )
     assert has_indefinite_vip(vip_player)
 
@@ -235,17 +235,17 @@ def test_filter_online_players():
     )
 
     players = make_mock_server_pop(
-        players={s: make_mock_player(steam_id_64=s) for s in ["0", "1", "2", "3", "4"]}
+        players={s: make_mock_player(player_id=s) for s in ["0", "1", "2", "3", "4"]}
     )
     assert set(filter_online_players(vips, players)) == {"1", "2", "3"}
 
     players = make_mock_server_pop(
-        players={s: make_mock_player(steam_id_64=s) for s in ["1", "3"]}
+        players={s: make_mock_player(player_id=s) for s in ["1", "3"]}
     )
     assert set(filter_online_players(vips, players)) == {"1", "3"}
 
     players = make_mock_server_pop(
-        players={s: make_mock_player(steam_id_64=s) for s in ["1", "4"]}
+        players={s: make_mock_player(player_id=s) for s in ["1", "4"]}
     )
     assert set(filter_online_players(vips, players)) == {"1"}
 
@@ -266,7 +266,7 @@ def test_collect_steam_ids():
     steam_ids = ["1", "2", "3"]
 
     players = make_mock_server_pop(
-        players={s: make_mock_player(steam_id_64=s) for s in steam_ids}
+        players={s: make_mock_player(player_id=s) for s in steam_ids}
     )
     gamestate = make_mock_gamestate(allied=20, axis=20)
     cum_steam_ids = set()
@@ -276,7 +276,7 @@ def test_collect_steam_ids():
     )
 
     players = make_mock_server_pop(
-        players={s: make_mock_player(steam_id_64=s) for s in steam_ids[:-1]}
+        players={s: make_mock_player(player_id=s) for s in steam_ids[:-1]}
     )
     cum_steam_ids = collect_steam_ids(
         config=config, players=players, cum_steam_ids=cum_steam_ids
@@ -298,7 +298,7 @@ def test_collect_steam_ids_online_only():
     steam_ids = ["1", "2", "3"]
 
     players = make_mock_server_pop(
-        players={s: make_mock_player(steam_id_64=s) for s in steam_ids}
+        players={s: make_mock_player(player_id=s) for s in steam_ids}
     )
     gamestate = make_mock_gamestate(allied=20, axis=20)
     cum_steam_ids = set()
@@ -308,7 +308,7 @@ def test_collect_steam_ids_online_only():
     )
 
     players = make_mock_server_pop(
-        players={s: make_mock_player(steam_id_64=s) for s in steam_ids[:-1]}
+        players={s: make_mock_player(player_id=s) for s in steam_ids[:-1]}
     )
     cum_steam_ids = collect_steam_ids(
         config=config, players=players, cum_steam_ids=cum_steam_ids

@@ -99,7 +99,7 @@ class ServerConfig(pydantic.BaseModel):
 
 class Player(pydantic.BaseModel):
     name: str
-    steam_id_64: str
+    player_id: str
     current_playtime_seconds: int
 
 

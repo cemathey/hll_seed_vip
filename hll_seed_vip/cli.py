@@ -102,7 +102,7 @@ async def main():
                 )
 
                 player_name_lookup |= {
-                    p.steam_id_64: p.name for p in online_players.players.values()
+                    p.player_id: p.name for p in online_players.players.values()
                 }
 
                 logger.debug(
@@ -131,7 +131,7 @@ async def main():
 
                     # Players who were online when we seeded but didn't meet the criteria for VIP
                     no_reward_steam_ids = {
-                        p.steam_id_64 for p in online_players.players.values()
+                        p.player_id for p in online_players.players.values()
                     } - to_add_vip_steam_ids
 
                     expiration_timestamps = defaultdict(
@@ -143,7 +143,7 @@ async def main():
                     )
                     for player in current_vips.values():
                         expiration_timestamps[
-                            player.player.steam_id_64
+                            player.player.player_id
                         ] = calc_vip_expiration_timestamp(
                             config=config,
                             expiration=player.expiration_date if player else None,
