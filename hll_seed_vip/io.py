@@ -9,7 +9,13 @@ import httpx
 import trio
 from loguru import logger
 
-from hll_seed_vip.models import GameState, Player, ServerPopulation, VipPlayer
+from hll_seed_vip.models import (
+    GameState,
+    Player,
+    PublicInfoType,
+    ServerPopulation,
+    VipPlayer,
+)
 
 
 def with_backoff_retry():
@@ -41,13 +47,13 @@ def with_backoff_retry():
 
 @with_backoff_retry()
 async def get_public_info(
-    client: httpx.AsyncClient, server_url: str, endpoint="api/public_info"
-) -> dict[str, Any]:
+    client: httpx.AsyncClient, server_url: str, endpoint="api/get_public_info"
+) -> PublicInfoType:
     url = urllib.parse.urljoin(server_url, endpoint)
     response = await client.get(url=url)
     raw_response = response.json()["result"]
 
-    return {"current_map_human_name": raw_response["current_map"]["human_name"]}
+    return raw_response
 
 
 @with_backoff_retry()
@@ -135,9 +141,9 @@ async def add_vip(
         "forward": forward,
         "steam_id_64": steam_id_64,
         "name": player_name,
-        "expiration": expiration_timestamp.isoformat()
-        if expiration_timestamp
-        else None,
+        "expiration": (
+            expiration_timestamp.isoformat() if expiration_timestamp else None
+        ),
     }
     logger.debug(f"add_vip {url=} {body=}")
     response = await client.post(url=url, json=body)

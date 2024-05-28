@@ -186,7 +186,9 @@ async def main():
                         )
                         embed = make_seed_announcement_embed(
                             message=config.discord_seeding_complete_message,
-                            current_map=public_info["current_map_human_name"],
+                            current_map=public_info["current_map"]["map"][
+                                "pretty_name"
+                            ],
                             time_remaining=gamestate.raw_time_remaining,
                             player_count_message=config.discord_player_count_message,
                             num_allied_players=gamestate.num_allied_players,
@@ -256,7 +258,9 @@ async def main():
                             message=config.discord_seeding_in_progress_message.format(
                                 player_count=total_players
                             ),
-                            current_map=public_info["current_map_human_name"],
+                            current_map=public_info["current_map"]["map"][
+                                "pretty_name"
+                            ],
                             time_remaining=gamestate.raw_time_remaining,
                             player_count_message=config.discord_player_count_message,
                             num_allied_players=gamestate.num_allied_players,

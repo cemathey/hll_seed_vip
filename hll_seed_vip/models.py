@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from typing import TypedDict
 
 import pydantic
+import typing_extensions
 
 
 class ConfigTimeDeltaType(TypedDict):
@@ -141,3 +142,65 @@ class PlayTimeCondition(BaseCondition):
 
     def is_met(self):
         return self.current_time_secs >= self.min_time_secs
+
+
+class MapType(typing_extensions.TypedDict):
+    id: str
+    name: str
+    tag: str
+    prettyname: str
+    shortname: str
+    allies: str
+    axis: str
+
+
+class LayerType(typing_extensions.TypedDict):
+    id: str
+    map: MapType
+    gamemode: str
+    attackers: str | None
+    environment: str
+    pretty_name: str
+    image_name: str
+    image_url: str | None
+
+
+class PublicInfoMapType(TypedDict):
+    map: LayerType
+    start: float | None
+
+
+class PublicInfoPlayerType(TypedDict):
+    allied: int
+    axis: int
+
+
+class PublicInfoScoreType(TypedDict):
+    allied: int
+    axis: int
+
+
+class VoteMapResultType(TypedDict):
+    total_votes: int
+    winning_maps: list[tuple[LayerType, int]]
+
+
+class PublicInfoNameType(TypedDict):
+    name: str
+    short_name: str
+    public_stats_port: int | None
+    public_stats_port_https: int | None
+
+
+class PublicInfoType(TypedDict):
+    """TypedDict for rcon.views.get_public_info"""
+
+    current_map: PublicInfoMapType
+    next_map: PublicInfoMapType
+    player_count: int
+    max_player_count: int
+    player_count_by_team: PublicInfoPlayerType
+    score: PublicInfoScoreType
+    time_remaining: float
+    vote_status: VoteMapResultType | None
+    name: PublicInfoNameType
