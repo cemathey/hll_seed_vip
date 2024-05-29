@@ -5,14 +5,6 @@ from freezegun import freeze_time
 
 from hll_seed_vip.utils import format_player_message, format_vip_reward_name
 
-with freeze_time("2024-01-31"):
-    NOW = datetime.now()
-    NOW_UTC = datetime.now(tz=timezone.utc)
-    NOW_UTC_PLUS_01_00 = datetime.now(tz=timezone(offset=timedelta(hours=1)))
-    TODAY = date.today()
-    TOMORROW = TODAY + timedelta(days=1)
-    YESTERDAY = TODAY - timedelta(days=1)
-
 
 @pytest.mark.parametrize(
     "msg, vip_reward, vip_expiration, nice_time_delta, nice_expiration_date, expected",
@@ -32,7 +24,7 @@ with freeze_time("2024-01-31"):
             datetime(year=2024, month=12, day=1, hour=13, tzinfo=timezone.utc),
             True,
             True,
-            "Thank you for helping us seed, your VIP expires 9 months from now",
+            "Thank you for helping us seed, your VIP expires 10 months from now",
         ),
         (
             "Thank you for helping us seed, you earned {vip_reward} of VIP and your VIP expires {vip_expiration}",
@@ -40,7 +32,7 @@ with freeze_time("2024-01-31"):
             datetime(year=2024, month=12, day=1, hour=13, tzinfo=timezone.utc),
             True,
             True,
-            "Thank you for helping us seed, you earned 12 hours of VIP and your VIP expires 9 months from now",
+            "Thank you for helping us seed, you earned 12 hours of VIP and your VIP expires 10 months from now",
         ),
         (
             "Thank you for helping us seed!",
@@ -60,16 +52,24 @@ def test_format_player_message(
     nice_expiration_date: bool,
     expected: str,
 ):
-    assert (
-        format_player_message(
-            message=msg,
-            vip_reward=vip_reward,
-            vip_expiration=vip_expiration,
-            nice_time_delta=nice_time_delta,
-            nice_expiration_date=nice_expiration_date,
+    with freeze_time("2024-01-01"):
+        NOW = datetime.now()
+        NOW_UTC = datetime.now(tz=timezone.utc)
+        NOW_UTC_PLUS_01_00 = datetime.now(tz=timezone(offset=timedelta(hours=1)))
+        TODAY = date.today()
+        TOMORROW = TODAY + timedelta(days=1)
+        YESTERDAY = TODAY - timedelta(days=1)
+
+        assert (
+            format_player_message(
+                message=msg,
+                vip_reward=vip_reward,
+                vip_expiration=vip_expiration,
+                nice_time_delta=nice_time_delta,
+                nice_expiration_date=nice_expiration_date,
+            )
+            == expected
         )
-        == expected
-    )
 
 
 @pytest.mark.parametrize(
