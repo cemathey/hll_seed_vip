@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hll-seed-vip"
-version = "0.3.0"
+version = "1.0.0"
 description = ""
 authors = ["C. Eric Mathey <emathey@protonmail.com>"]
 readme = "README.md"
