@@ -1,5 +1,3 @@
-version: "3.8"
-
 name: hll_seed_vip
 services:
     hll_seed_vip:

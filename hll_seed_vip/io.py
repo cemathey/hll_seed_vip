@@ -9,7 +9,14 @@ import httpx
 import trio
 from loguru import logger
 
-from hll_seed_vip.models import GameState, Player, ServerPopulation, VipPlayer
+from hll_seed_vip.models import (
+    GameState,
+    GameStateType,
+    Player,
+    PublicInfoType,
+    ServerPopulation,
+    VipPlayer,
+)
 
 
 def with_backoff_retry():
@@ -41,13 +48,13 @@ def with_backoff_retry():
 
 @with_backoff_retry()
 async def get_public_info(
-    client: httpx.AsyncClient, server_url: str, endpoint="api/public_info"
-) -> dict[str, Any]:
+    client: httpx.AsyncClient, server_url: str, endpoint="api/get_public_info"
+) -> PublicInfoType:
     url = urllib.parse.urljoin(server_url, endpoint)
     response = await client.get(url=url)
     raw_response = response.json()["result"]
 
-    return {"current_map_human_name": raw_response["current_map"]["human_name"]}
+    return raw_response
 
 
 @with_backoff_retry()
@@ -61,9 +68,9 @@ async def get_vips(
 
     raw_vips = response.json()["result"]
     return {
-        vip["steam_id_64"]: VipPlayer(
+        vip["player_id"]: VipPlayer(
             player=Player(
-                steam_id_64=vip["steam_id_64"],
+                player_id=vip["player_id"],
                 name=vip["name"],
                 current_playtime_seconds=0,
             ),
@@ -81,14 +88,10 @@ async def get_gamestate(
 ) -> GameState:
     url = urllib.parse.urljoin(server_url, endpoint)
     response = await client.get(url=url)
-    result = response.json()["result"]
 
-    return GameState(
-        raw_time_remaining=result["raw_time_remaining"],
-        current_map=result["current_map"],
-        num_allied_players=result["num_allied_players"],
-        num_axis_players=result["num_axis_players"],
-    )
+    result: GameStateType = response.json()["result"]
+
+    return GameState.model_validate(result)
 
 
 @with_backoff_retry()
@@ -103,7 +106,7 @@ async def get_online_players(
     players = {}
     for raw_player in result:
         name = raw_player["name"]
-        steam_id_64 = steam_id_64 = raw_player["steam_id_64"]
+        player_id = player_id = raw_player["player_id"]
         if raw_player["profile"] is None:
             # Apparently CRCON will occasionally not return a player profile
             logger.debug(f"No CRCON profile, skipping {raw_player}")
@@ -111,10 +114,10 @@ async def get_online_players(
         current_playtime_seconds = raw_player["profile"]["current_playtime_seconds"]
         p = Player(
             name=name,
-            steam_id_64=steam_id_64,
+            player_id=player_id,
             current_playtime_seconds=current_playtime_seconds,
         )
-        players[p.steam_id_64] = p
+        players[p.player_id] = p
 
     return ServerPopulation(players=players)
 
@@ -123,7 +126,7 @@ async def get_online_players(
 async def add_vip(
     client: httpx.AsyncClient,
     server_url: str,
-    steam_id_64: str,
+    player_id: str,
     player_name: str,
     expiration_timestamp: datetime | None,
     forward: bool,
@@ -133,17 +136,17 @@ async def add_vip(
 
     body = {
         "forward": forward,
-        "steam_id_64": steam_id_64,
-        "name": player_name,
-        "expiration": expiration_timestamp.isoformat()
-        if expiration_timestamp
-        else None,
+        "player_id": player_id,
+        "description": player_name,
+        "expiration": (
+            expiration_timestamp.isoformat() if expiration_timestamp else None
+        ),
     }
     logger.debug(f"add_vip {url=} {body=}")
     response = await client.post(url=url, json=body)
     result = response.json()["result"]
     logger.info(
-        f"added VIP for {steam_id_64=} {expiration_timestamp=} {player_name=} {result=}",
+        f"added VIP for {player_id=} {expiration_timestamp=} {player_name=} {result=}",
     )
 
 
@@ -151,11 +154,11 @@ async def add_vip(
 async def message_player(
     client: httpx.AsyncClient,
     server_url: str,
-    steam_id_64: str,
+    player_id: str,
     message: str,
     endpoint="api/do_message_player",
 ):
     url = urllib.parse.urljoin(server_url, endpoint)
-    body = {"steam_id_64": steam_id_64, "message": message}
-    logger.info(f"Messaging player {steam_id_64}: {message}")
+    body = {"player_id": player_id, "message": message}
+    logger.info(f"Messaging player {player_id}: {message}")
     response = await client.post(url=url, json=body)
