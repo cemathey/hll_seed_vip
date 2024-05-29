@@ -11,6 +11,7 @@ from loguru import logger
 
 from hll_seed_vip.models import (
     GameState,
+    GameStateType,
     Player,
     PublicInfoType,
     ServerPopulation,
@@ -87,18 +88,10 @@ async def get_gamestate(
 ) -> GameState:
     url = urllib.parse.urljoin(server_url, endpoint)
     response = await client.get(url=url)
-    result = response.json()["result"]
 
-    return GameState(
-        raw_time_remaining=result["raw_time_remaining"],
-        current_map=result["current_map"],
-        next_map=result["next_map"],
-        num_allied_players=result["num_allied_players"],
-        num_axis_players=result["num_axis_players"],
-        allied_score=result["allied_score"],
-        axis_score=result["axis_score"],
-        time_remaining=result["time_remaining"],
-    )
+    result: GameStateType = response.json()["result"]
+
+    return GameState.model_validate(result)
 
 
 @with_backoff_retry()

@@ -5,13 +5,15 @@ from pydantic import HttpUrl
 
 from hll_seed_vip.models import (
     Faction,
+    FactionName,
     GameState,
-    LayerType,
-    MapType,
+    Layer,
+    Map,
     Player,
     PlayerCountCondition,
     ServerConfig,
     ServerPopulation,
+    Team,
     VipPlayer,
 )
 from hll_seed_vip.utils import (
@@ -30,51 +32,53 @@ def make_mock_map(
     tag: str = "MOR",
     pretty_name: str = "Mortain",
     shortname: str = "MOR",
-    allies=Faction.US,
-    axis=Faction.GER,
-) -> MapType:
-    return {
-        "id": id,
-        "name": name,
-        "tag": tag,
-        "pretty_name": pretty_name,
-        "shortname": shortname,
-        "allies": allies,
-        "axis": axis,
-    }
+    allies=Faction(name=FactionName.US.value, team=Team.ALLIES),
+    axis=Faction(name=FactionName.GER.value, team=Team.AXIS),
+) -> Map:
+    return Map(
+        id=id,
+        name=name,
+        tag=tag,
+        pretty_name=pretty_name,
+        shortname=shortname,
+        allies=allies,
+        axis=axis,
+    )
 
 
 def make_mock_layer(
     id: str = "mortain_offensiveger_overcast",
-    map: MapType = make_mock_map(),
+    map: Map = make_mock_map(),
     game_mode="warfare",
     attackers="axis",
     environment="overcast",
     pretty_name="Mortain Off. GER (Overcast)",
     image_name="mortain-overcast.webp",
     image_url: str | None = None,
-) -> LayerType:
-    return {
-        "id": id,
-        "map": map,
-        "game_mode": game_mode,
-        "attackers": attackers,
-        "environment": environment,
-        "pretty_name": pretty_name,
-        "image_name": image_name,
-        "image_url": image_url,
-    }
+) -> Layer:
+    return Layer(
+        **{
+            "id": id,
+            "map": map,
+            "game_mode": game_mode,
+            "attackers": attackers,
+            "environment": environment,
+            "pretty_name": pretty_name,
+            "image_name": image_name,
+            "image_url": image_url,
+        }
+    )
 
 
 def make_mock_gamestate(
-    current_map: LayerType = make_mock_layer(),
+    current_map: Layer = make_mock_layer(),
     allied: int = 0,
     axis: int = 0,
     allied_score: int = 2,
     axis_score: int = 3,
     raw_time_remaining: str = "",
     time_remaining: float = 360,
-    next_map: LayerType = make_mock_layer(),
+    next_map: Layer = make_mock_layer(),
 ) -> GameState:
     return GameState(
         raw_time_remaining=raw_time_remaining,
