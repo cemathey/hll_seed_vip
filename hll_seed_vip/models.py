@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from enum import Enum
 from typing import TypedDict
 
 import pydantic
@@ -148,20 +149,38 @@ class PlayTimeCondition(BaseCondition):
         return self.current_time_secs >= self.min_time_secs
 
 
+class Team(str, Enum):
+    ALLIES = "allies"
+    AXIS = "axis"
+
+
+class _Faction(pydantic.BaseModel):
+    name: str
+    team: Team
+
+
+class Faction(Enum):
+    CW = _Faction(name="gb", team=Team.ALLIES)
+    GB = _Faction(name="gb", team=Team.ALLIES)
+    GER = _Faction(name="ger", team=Team.AXIS)
+    RUS = _Faction(name="rus", team=Team.ALLIES)
+    US = _Faction(name="us", team=Team.ALLIES)
+
+
 class MapType(typing_extensions.TypedDict):
     id: str
     name: str
     tag: str
-    prettyname: str
+    pretty_name: str
     shortname: str
-    allies: str
-    axis: str
+    allies: Faction
+    axis: Faction
 
 
 class LayerType(typing_extensions.TypedDict):
     id: str
     map: MapType
-    gamemode: str
+    game_mode: str
     attackers: str | None
     environment: str
     pretty_name: str

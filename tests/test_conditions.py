@@ -4,7 +4,10 @@ import pytest
 from pydantic import HttpUrl
 
 from hll_seed_vip.models import (
+    Faction,
     GameState,
+    LayerType,
+    MapType,
     Player,
     PlayerCountCondition,
     ServerConfig,
@@ -21,17 +24,67 @@ from hll_seed_vip.utils import (
 )
 
 
+def make_mock_map(
+    id: str = "mortain",
+    name: str = "MORTAIN",
+    tag: str = "MOR",
+    pretty_name: str = "Mortain",
+    shortname: str = "MOR",
+    allies=Faction.US,
+    axis=Faction.GER,
+) -> MapType:
+    return {
+        "id": id,
+        "name": name,
+        "tag": tag,
+        "pretty_name": pretty_name,
+        "shortname": shortname,
+        "allies": allies,
+        "axis": axis,
+    }
+
+
+def make_mock_layer(
+    id: str = "mortain_offensiveger_overcast",
+    map: MapType = make_mock_map(),
+    game_mode="warfare",
+    attackers="axis",
+    environment="overcast",
+    pretty_name="Mortain Off. GER (Overcast)",
+    image_name="mortain-overcast.webp",
+    image_url: str | None = None,
+) -> LayerType:
+    return {
+        "id": id,
+        "map": map,
+        "game_mode": game_mode,
+        "attackers": attackers,
+        "environment": environment,
+        "pretty_name": pretty_name,
+        "image_name": image_name,
+        "image_url": image_url,
+    }
+
+
 def make_mock_gamestate(
-    time_remaining: str = "1:00:00",
-    current_map: str = "SomeMap",
+    current_map: LayerType = make_mock_layer(),
     allied: int = 0,
     axis: int = 0,
+    allied_score: int = 2,
+    axis_score: int = 3,
+    raw_time_remaining: str = "",
+    time_remaining: float = 360,
+    next_map: LayerType = make_mock_layer(),
 ) -> GameState:
     return GameState(
-        raw_time_remaining=time_remaining,
+        raw_time_remaining=raw_time_remaining,
         current_map=current_map,
         num_allied_players=allied,
         num_axis_players=axis,
+        allied_score=allied_score,
+        axis_score=axis_score,
+        time_remaining=time_remaining,
+        next_map=next_map,
     )
 
 
