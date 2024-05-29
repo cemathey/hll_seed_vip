@@ -95,7 +95,7 @@ class ServerConfig(pydantic.BaseModel):
     @pydantic.field_validator("base_url")
     @classmethod
     def only_valid_urls(cls, v):
-        return str(pydantic.HttpUrl(v))
+        return str(pydantic.HttpUrl(v))  # type: ignore
 
 
 class Player(pydantic.BaseModel):
@@ -360,7 +360,7 @@ class Layer(pydantic.BaseModel):
         out = self.map.pretty_name
         if self.game_mode == GameMode.OFFENSIVE:
             out += " Off."
-            if self.attackers:
+            if self.attackers and self.attacking_faction:
                 out += f" {self.attacking_faction.name.upper()}"
         elif self.game_mode.is_small():
             # TODO: Remove once more Skirmish modes release
