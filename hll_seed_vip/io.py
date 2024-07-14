@@ -130,7 +130,7 @@ async def add_vip(
     player_name: str,
     expiration_timestamp: datetime | None,
     forward: bool,
-    endpoint="api/do_add_vip",
+    endpoint="api/add_vip",
 ):
     url = urllib.parse.urljoin(server_url, endpoint)
 
@@ -156,7 +156,7 @@ async def message_player(
     server_url: str,
     player_id: str,
     message: str,
-    endpoint="api/do_message_player",
+    endpoint="api/message_player",
 ):
     url = urllib.parse.urljoin(server_url, endpoint)
     body = {"player_id": player_id, "message": message}
