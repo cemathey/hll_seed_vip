@@ -133,7 +133,7 @@ def check_player_conditions(
         for player in server_pop.players.values()
         if PlayTimeCondition(
             min_time_secs=int(config.minimum_play_time.total_seconds()),
-            current_time_secs=player.current_playtime_seconds,
+            current_time_secs=max(0, player.current_playtime_seconds),
         ).is_met()
     )
 
