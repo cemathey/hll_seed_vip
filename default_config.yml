@@ -77,7 +77,7 @@ vip_reward:
   player_name_not_current_vip: "{player_name} - HLL Seed VIP"
   # If set to true (recommended) it will add their earned VIP time in CRCON
   # If set to false it will overwrite their CRCON expiration date with the new expiration
-  cumulative: true
+  cumulative_vip: true
   # How long the player earns VIP for helping seed (it is the sum of all the categories)
   timeframe:
     minutes: 0
@@ -88,8 +88,8 @@ vip_reward:
   # If set to true (recommended) it will use https://humanize.readthedocs.io/en/stable/
   # and format VIP rewards nicely (i.e. `24 hours`)
   # If set to false it will use Pythons built in formatting, (i.e. 25 hours would show as `1 day, 1:00:00`)
-  nice_time_delta: yes
+  nice_time_delta: true
   # If set to true (recommended) it will use https://humanize.readthedocs.io/en/stable/
   # and format dates nicely (i.e. `10 months from now`)
   # If set to false it will use ISO dates (i.e.  `2024-01-31T17:19:50.947186+00:00`)
-  nice_expiration_date: yes
+  nice_expiration_date: true
