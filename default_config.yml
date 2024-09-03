@@ -77,7 +77,7 @@ vip_reward:
   player_name_not_current_vip: "{player_name} - HLL Seed VIP"
   # If set to true (recommended) it will add their earned VIP time in CRCON
   # If set to false it will overwrite their CRCON expiration date with the new expiration
-  cumulative: true
+  cumulative_vip: true
   # How long the player earns VIP for helping seed (it is the sum of all the categories)
   timeframe:
     minutes: 0
