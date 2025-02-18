@@ -1,3 +1,5 @@
+# This repository is now archived because the functionality has been integrated into [Community RCON](https://github.com/MarechJ/hll_rcon_tool/) and I will no longer be making any updates to this project here; any new features/changes will be in CRCON itself.
+
 # Hell Let Loose Seeding VIP
 
 ## Introduction
